@@ -17,6 +17,7 @@ class Symbol:
             self.arity = len(args)
         else:
             self.arity = 0
+        self.signature = name + "/" + str(self.arity)
         if (name == None or type == None):
             raise Exception("Invalid arguments: term")
         if (type == Symbol_Type.COMPOUND and args == None):
@@ -84,7 +85,7 @@ def Rest(x):
 # return a substitute or failure (None)
 # substitute is a list which elements of it is a tuple with 2 elements (a, b) means that replace a with b
 # pass empty list to sub at first
-def Unify(x, y, substitutes : list) -> list:
+def Unify(x, y, substitutes = []) -> list:
     if substitutes == None:
         return None
 
@@ -144,20 +145,20 @@ def print_substitutes(substitutes):
     print('[' + ', '.join(substitutes_strings) + ']')
 
 
-X = Symbol('X', Symbol_Type.VARIABLE, None)
-Y = Symbol('Y', Symbol_Type.VARIABLE, None)
+# X = Symbol('X', Symbol_Type.VARIABLE, None)
+# Y = Symbol('Y', Symbol_Type.VARIABLE, None)
 
-f = Symbol('f', Symbol_Type.COMPOUND, [X])
+# f = Symbol('f', Symbol_Type.COMPOUND, [X])
 
-m = Symbol('f', Symbol_Type.COMPOUND, [X, Y])
+# m = Symbol('f', Symbol_Type.COMPOUND, [X, Y])
 
-k = Symbol('g', Symbol_Type.COMPOUND, [Y, f])
-g = Symbol('f', Symbol_Type.COMPOUND, [k])
+# k = Symbol('g', Symbol_Type.COMPOUND, [Y, f])
+# g = Symbol('f', Symbol_Type.COMPOUND, [k])
 
-clause1 = f
-clause2 = g
-solution = Unify(clause1, clause2, [])
-if solution:
-    print_substitutes(solution)
-else:
-    print("Can't unify {0} and {1}".format(str(clause1), str(clause2)))
+# clause1 = f
+# clause2 = g
+# solution = Unify(clause1, clause2, [])
+# if solution:
+#     print_substitutes(solution)
+# else:
+#     print("can't unify {0} and {1}".format(str(clause1), str(clause2)))
