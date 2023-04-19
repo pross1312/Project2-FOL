@@ -104,6 +104,11 @@ inp = 'husband (Person, Wife)   :- married(Person, Wife) , (male(Person) ; femal
 input_test = 'husband(Person, Wife)'
 input_test2 = 'married(Person, Wife) , (male(Person) ; female(Wife))'
 
-c = Clause.parse(inp)
+c = parse_clause(input_test2)
 print(c)
 
+//just convert only the body of the sentence
+test = Postfix.Postfix(len(c))
+test.infixToPostfix(c)
+for i in test.postfix:
+    print(i, end=  " ")
