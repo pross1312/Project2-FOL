@@ -2,10 +2,9 @@ from enum import Enum
 
 
 class Symbol_Type(Enum):
-    FUNCTION = 0
+    COMPOUND = 0 # function and predicate is compound symbol
     CONSTANT = 1
     VARIABLE = 2
-    PREDICATE = 3
 
 class Symbol:
     def __init__(self, name : str, type : Symbol_Type, args : 'list[Symbol]') -> None:
@@ -20,19 +19,15 @@ class Symbol:
             self.arity = 0
         if (name == None or type == None):
             raise Exception("Invalid arguments: term")
-        if ((type == Symbol_Type.FUNCTION or type == Symbol_Type.PREDICATE) and args == None):
+        if (type == Symbol_Type.COMPOUND and args == None):
             raise Exception("Invalid arguments: args of function or predicate term can't be None")
-        if (type == Symbol_Type.PREDICATE):
-            for arg in args:
-                if (arg.type == Symbol_Type.PREDICATE):
-                    raise Exception("Invalid arguments: Predicate can't have predicate symbols as arg")
-        if (type != Symbol_Type.FUNCTION and type != Symbol_Type.PREDICATE and args != None):
+        if (type != Symbol_Type.COMPOUND and args != None):
             raise Exception("Invalid arguments: can't pass args to term that is not function or predicate")
     
     def __str__(self) -> str:
         if self.type == Symbol_Type.CONSTANT or self.type == Symbol_Type.VARIABLE:
             return self.name
-        if self.type == Symbol_Type.FUNCTION or self.type == Symbol_Type.PREDICATE:
+        if self.type == Symbol_Type.COMPOUND:
             s = self.name + '('
             for i in range(len(self.args)):
                 s += str(self.args[i])
@@ -48,8 +43,7 @@ def VARIABLE(x):
     return False
 
 def COMPOUND(x):
-    if (x.__class__.__name__ == 'Symbol') and\
-       (x.type == Symbol_Type.FUNCTION or x.type == Symbol_Type.PREDICATE):
+    if (x.__class__.__name__ == 'Symbol') and x.type == Symbol_Type.COMPOUND:
         return True
     return False
     
@@ -153,15 +147,13 @@ def print_substitutes(substitutes):
 X = Symbol('X', Symbol_Type.VARIABLE, None)
 Y = Symbol('Y', Symbol_Type.VARIABLE, None)
 
-f = Symbol('f', Symbol_Type.FUNCTION, [X])
+f = Symbol('f', Symbol_Type.COMPOUND, [X])
 
-m = Symbol('f', Symbol_Type.FUNCTION, [X, Y])
+m = Symbol('f', Symbol_Type.COMPOUND, [X, Y])
 
-k = Symbol('g', Symbol_Type.FUNCTION, [Y, f])
-g = Symbol('f', Symbol_Type.FUNCTION, [k])
+k = Symbol('g', Symbol_Type.COMPOUND, [Y, f])
+g = Symbol('f', Symbol_Type.COMPOUND, [k])
 
-# f = f(X) 
-# g = f(g(Y, X))
 clause1 = f
 clause2 = g
 solution = Unify(clause1, clause2, [])
