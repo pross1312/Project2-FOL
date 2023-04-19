@@ -130,5 +130,3 @@ inp2 = 'mother(Parent, Child)   :- parent(Parent, Child) , female(Parent)'
 
 input_test = 'husband(Person, Wife)'
 input_test2 = 'married(Person, Wife) , (male(Person) ; female(Wife))'
-c = Clause.parse(inp)
-print(c)
