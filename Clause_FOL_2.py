@@ -2,6 +2,10 @@ from re import I
 from Symbol_FOL import Symbol, Symbol_Type
 import Postfix
 
+# parse prolog clause, only some of its to implement first order logic backward chaining
+
+
+
 onDebug = False
 
 def debug(s : str):
@@ -37,9 +41,9 @@ class Clause:
         if len(tokens) > 2 or len(tokens) < 1:
             raise Exception("Invalid clause length parts" + clause)
 
-        head_symbols = split_to_symbol(tokens[0])
+        head_symbols = split_to_symbol(tokens[0], 0)
         if len(tokens) == 2:
-            body_symbols = split_to_symbol(tokens[1])
+            body_symbols = split_to_symbol(tokens[1], 0)
             posfix_parser = Postfix.Postfix(len(body_symbols))
             posfix_parser.infixToPostfix(body_symbols)
             body = posfix_parser.postfix
@@ -61,7 +65,7 @@ def find_first_of(s : str, to_find : str, start = 0):
 # const: caijofjiao2313oj2i
 # compound: lowerchar(..., ..)
 
-def parse_symbol(raw_symbol : str) -> Symbol:
+def parse_symbol(raw_symbol : str, depth) -> Symbol:
     debug('raw symbol: ' + str(raw_symbol))
     raw_symbol = raw_symbol.strip()
     if len(raw_symbol) == 0:
@@ -81,7 +85,7 @@ def parse_symbol(raw_symbol : str) -> Symbol:
             raise Exception("Invalid clause")
         name = raw_symbol[:open_index]
         type_symbol = Symbol_Type.COMPOUND
-        args = split_to_symbol(raw_symbol[open_index + 1 : -1])
+        args = split_to_symbol(raw_symbol[open_index + 1 : -1], depth + 1)
         symbol = Symbol(name, type_symbol, args)  
 
     return symbol 
@@ -102,7 +106,10 @@ def find_match_parantheses(s : str, open_index):
             count_open -= 1
     return end_parentheses
 
-def split_to_symbol(raw_symbols: str):
+# add depth to split operator as well
+# split always call parse with the same depth
+# parse call split with depth + 1
+def split_to_symbol(raw_symbols: str, depth: int):
     # print('raw list symbols in: ', raw_symbols)
     raw_symbols = raw_symbols.strip()
     list_symbols = []
@@ -111,8 +118,11 @@ def split_to_symbol(raw_symbols: str):
     while start < len(raw_symbols): 
         index = find_first_of(raw_symbols, Clause.list_seperator, start)
         if index == None or raw_symbols[index] == ',' or raw_symbols[index] == ';': # probably a constant or variable
+            # add operator to list
+            if depth == 0 and index != None:
+                list_symbols.append(raw_symbols[index])
             symbol_end_index = index if index != None else len(raw_symbols)
-            symbol = parse_symbol(raw_symbols[start : symbol_end_index])
+            symbol = parse_symbol(raw_symbols[start : symbol_end_index], depth)
             debug('var or const: ' + str(symbol))
         # found a seperator, a compound symbol
         # proceed to find end of this symbol 
@@ -120,12 +130,22 @@ def split_to_symbol(raw_symbols: str):
             # if open parentheses normal compound
             # try to find match close
             if raw_symbols[index] == '(':
+                # check if this is just a () but not symbol, add it in
                 end_parentheses = find_match_parantheses(raw_symbols, index)
                 if end_parentheses == None:
                     raise Exception("Can't find matching parentheses")
+                # if there is no character or anything between start and this open parentheses then it's not symbol
+                if depth == 0 and str.isspace(raw_symbols[start : index]):
+                    debug('On parentheses: ' + raw_symbols[start: ])
+                    list_symbols.append(raw_symbols[index])
+                    # split in this parentheses, with the same depth means that operator will be add if on depth 0
+                    list_tokens = split_to_symbol(raw_symbols[index+1 : end_parentheses], depth) 
+                    list_symbols.extend(list_tokens)
+                    list_symbols.append(')')
                 # found end of this compound symbol, pass it to parse_symbol
-                symbol = parse_symbol(raw_symbols[start : end_parentheses + 1])
-                debug('compound: ' + str(symbol))
+                else:
+                    symbol = parse_symbol(raw_symbols[start : end_parentheses + 1], depth)
+                    debug('compound: ' + str(symbol))
                 symbol_end_index = end_parentheses
 
             # special compound symbol
@@ -144,11 +164,11 @@ def split_to_symbol(raw_symbols: str):
                     end_idx = find_first_of(raw_symbols, ' (\t', first_char)
                     # last symbols
                     if end_idx == None:
-                        arg_symbol = parse_symbol(raw_symbols[first_char : len(raw_symbols)])
+                        arg_symbol = parse_symbol(raw_symbols[first_char : len(raw_symbols)], depth)
                         symbol_end_index = len(raw_symbols)
                     elif raw_symbols[end_idx] == '(':
                         close_parentheses_index = find_match_parantheses(raw_symbols, end_idx) 
-                        arg_symbol = parse_symbol(raw_symbols[first_char : close_parentheses_index + 1])
+                        arg_symbol = parse_symbol(raw_symbols[first_char : close_parentheses_index + 1], depth)
                         symbol_end_index = close_parentheses_index
                     symbol = Symbol('not', Symbol_Type.COMPOUND, [arg_symbol])
 
@@ -161,8 +181,9 @@ def split_to_symbol(raw_symbols: str):
                     end_idx = find_first_of(raw_symbols, ',; \t', first_char)
                     if end_idx == None:
                         end_idx = len(raw_symbols)
-                    symbol_arg1 = parse_symbol(raw_symbols[start : index])
-                    symbol_arg2 = parse_symbol(raw_symbols[first_char : end_idx])
+                    
+                    symbol_arg1 = parse_symbol(raw_symbols[start : index], depth)
+                    symbol_arg2 = parse_symbol(raw_symbols[first_char : end_idx], depth)
                     debug('arg1: ' + str(symbol_arg1))
                     debug('arg2: ' + str(symbol_arg2))
                     symbol = Symbol('\=', Symbol_Type.COMPOUND, [symbol_arg1, symbol_arg2])
@@ -185,6 +206,11 @@ def split_to_symbol(raw_symbols: str):
 # print('output: ', clause)
 
 # test_input = 'husband(Person, Wife)  :- married(Person, Wife) , (male(Person) ; female(Wife))'
+# print(test_input)
+# clause = Clause.parse_clause(test_input)
+# print('output: ', clause)
+
+# test_input = 'husband(Person, Wife)  :- married(Person, Wife) , (male(Person) ; (female(Wife) , twiq(Person)) ; asg(Tuong))'
 # print(test_input)
 # clause = Clause.parse_clause(test_input)
 # print('output: ', clause)
