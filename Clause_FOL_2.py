@@ -1,8 +1,8 @@
-from re import I
 from Symbol_FOL import Symbol, Symbol_Type
 import Postfix
 
 # parse prolog clause, only some of its to implement first order logic backward chaining
+# a lots are missing, and there may be bug too
 
 
 
@@ -16,7 +16,7 @@ def debug(s : str):
 # husband(Person, Wife)   :- married(Person, Wife) , (male(Person) ; female(Wife)).
 # husband(Person, Wife)
 class Clause:
-    list_seperator = '()\\,;'
+    list_seperator = '()\\,;\'"'
     def __init__(self, head, body) -> None:
         self.head = head
         self.body = body 
@@ -117,12 +117,21 @@ def split_to_symbol(raw_symbols: str, depth: int):
 
     while start < len(raw_symbols): 
         index = find_first_of(raw_symbols, Clause.list_seperator, start)
-        if index == None or raw_symbols[index] == ',' or raw_symbols[index] == ';': # probably a constant or variable
+        if index == None or raw_symbols[index] in ',;"\'': # probably a constant or variable
+            # handle case dummy like male('James,Viscount Severn'), notice that ',' is inside '' so it's valid name
+            if index != None and raw_symbols[index] in '\'"':
+                start = index + 1
+                index = find_first_of(raw_symbols, raw_symbols[index], start)
+                symbol = parse_symbol(raw_symbols[start : index], depth)
+                if index == None:
+                    raise Exception("Invalid clause, can't find matching ' or \"")
+                index = find_first_of(raw_symbols, ',;', index + 1)
+            else:
+                symbol = parse_symbol(raw_symbols[start : index], depth)
             # add operator to list
-            if depth == 0 and index != None:
+            if depth == 0 and index != None: 
                 list_symbols.append(raw_symbols[index])
             symbol_end_index = index if index != None else len(raw_symbols)
-            symbol = parse_symbol(raw_symbols[start : symbol_end_index], depth)
             debug('var or const: ' + str(symbol))
         # found a seperator, a compound symbol
         # proceed to find end of this symbol 
