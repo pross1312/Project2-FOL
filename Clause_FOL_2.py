@@ -65,7 +65,7 @@ def find_first_of(s : str, to_find : str, start = 0):
 # const: caijofjiao2313oj2i
 # compound: lowerchar(..., ..)
 
-def parse_symbol(raw_symbol : str, depth) -> Symbol:
+def parse_symbol(raw_symbol : str, depth, specify_type : Symbol_Type = None) -> Symbol:
     debug('raw symbol: ' + str(raw_symbol))
     raw_symbol = raw_symbol.strip()
     if len(raw_symbol) == 0:
@@ -75,16 +75,17 @@ def parse_symbol(raw_symbol : str, depth) -> Symbol:
     # parse constant or variable
     if str.isalnum(raw_symbol[-1]) or raw_symbol[-1] in "'\"":
         if str.isupper(raw_symbol[0]):
-            symbol = Symbol(raw_symbol, Symbol_Type.VARIABLE, None)
+            type_symbol = Symbol_Type.VARIABLE if specify_type == None else specify_type
         else:
-            symbol = Symbol(raw_symbol, Symbol_Type.CONSTANT, None)
+            type_symbol = Symbol_Type.CONSTANT if specify_type == None else specify_type     
+        symbol = Symbol(raw_symbol, type_symbol, None)
     # parse a normal compound symbol
     if raw_symbol[-1] == ')':
         open_index = find_first_of(raw_symbol, '(')
         if open_index == None:
             raise Exception("Invalid clause")
         name = raw_symbol[:open_index]
-        type_symbol = Symbol_Type.COMPOUND
+        type_symbol = Symbol_Type.COMPOUND if specify_type == None else specify_type
         args = split_to_symbol(raw_symbol[open_index + 1 : -1], depth + 1)
         symbol = Symbol(name, type_symbol, args)  
 
@@ -122,7 +123,7 @@ def split_to_symbol(raw_symbols: str, depth: int):
             if index != None and raw_symbols[index] in '\'"':
                 start = index + 1
                 index = find_first_of(raw_symbols, raw_symbols[index], start)
-                symbol = parse_symbol(raw_symbols[start : index], depth)
+                symbol = parse_symbol(raw_symbols[start : index], depth, Symbol_Type.CONSTANT)
                 if index == None:
                     raise Exception("Invalid clause, can't find matching ' or \"")
                 index = find_first_of(raw_symbols, ',;', index + 1)

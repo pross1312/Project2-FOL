@@ -1,3 +1,4 @@
+from re import I
 from Clause_FOL_2 import Clause, find_first_of
 from Symbol_FOL import Symbol, Symbol_Type, Unify, print_substitutes
 
@@ -23,11 +24,11 @@ class Knowledge_Base:
         if symbol.signature not in self.data:
             return None
         for clause in self.data[symbol.signature]:
-            substitute = Unify(symbol, clause.head)
+            substitute = Unify(symbol, clause.head, [])
             # if found then return substitute list and clause
             if substitute:
-                return (substitute, clause)
-        return None 
+                yield (substitute, clause)
+        return None
 
     def print(self):
         for key in self.data.keys():
@@ -54,9 +55,17 @@ class Knowledge_Base:
             clause = Clause.parse_clause(clause_raw[:idx])
             temp.append(clause)
             self.add(clause)
+    
 
 KB = Knowledge_Base()
 KB.read_from_file('Tree_family.pl')
-KB.print()
+# KB.print()
 
+x = Symbol('X', Symbol_Type.VARIABLE, None)
+y = Symbol('Prince Charles', Symbol_Type.CONSTANT, None)
+m = Symbol('male', Symbol_Type.COMPOUND, [x])
+n = Symbol('male', Symbol_Type.COMPOUND, [y])
 
+for sub, clause in KB.get_unifiable(m):
+    print_substitutes(sub)
+    print(clause)

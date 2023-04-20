@@ -1,3 +1,4 @@
+from ast import Constant
 from enum import Enum
 
 
@@ -5,6 +6,14 @@ class Symbol_Type(Enum):
     COMPOUND = 0 # function and predicate is compound symbol
     CONSTANT = 1
     VARIABLE = 2
+    def __str__(self) -> str:
+        if self == self.COMPOUND:
+            return "COMPOUND"
+        if self == self.CONSTANT:
+            return "CONSTANT"
+        if self == self.VARIABLE:
+            return "VARIABLE"
+        return None 
 
 class Symbol:
     def __init__(self, name : str, type : Symbol_Type, args : 'list[Symbol]') -> None:
@@ -26,7 +35,9 @@ class Symbol:
             raise Exception("Invalid arguments: can't pass args to term that is not function or predicate")
     
     def __str__(self) -> str:
-        if self.type == Symbol_Type.CONSTANT or self.type == Symbol_Type.VARIABLE:
+        if self.type == Symbol_Type.CONSTANT:
+            return "'{0}'".format(self.name) 
+        if self.type == Symbol_Type.VARIABLE:
             return self.name
         if self.type == Symbol_Type.COMPOUND:
             s = self.name + '('
@@ -85,7 +96,7 @@ def Rest(x):
 # return a substitute or failure (None)
 # substitute is a list which elements of it is a tuple with 2 elements (a, b) means that replace a with b
 # pass empty list to sub at first
-def Unify(x, y, substitutes = []) -> list:
+def Unify(x, y, substitutes) -> list:
     if substitutes == None:
         return None
 
@@ -93,7 +104,6 @@ def Unify(x, y, substitutes = []) -> list:
         return substitutes
 
     elif VARIABLE(x): 
-        # print('var x: ', x)
         return Unify_Var(x, y, substitutes)
 
     elif VARIABLE(y):
