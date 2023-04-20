@@ -1,5 +1,7 @@
-from Clause_FOL import Clause
+from Clause_FOL_2 import Clause, find_first_of
 from Symbol_FOL import Symbol, Symbol_Type, Unify, print_substitutes
+
+
 
 
 class Knowledge_Base:
@@ -26,19 +28,35 @@ class Knowledge_Base:
             if substitute:
                 return (substitute, clause)
         return None 
-    
-            
+
+    def print(self):
+        for key in self.data.keys():
+            print(key)
+            for clause in self.data[key]:
+                print(clause)
+            print()
+
+    def read_from_file(self, filename : str):
+        with open(filename, 'r') as f:
+            text = f.read()
+        f.close()
+        clauses_raw = text.split('.')
+        temp = []
+        for clause_raw in clauses_raw:
+            clause_raw = clause_raw.strip()
+            if len(clause_raw) == 0:
+                continue
+            idx = find_first_of(clause_raw, '%')
+            if idx == None:
+                idx = len(clause_raw)
+            if idx == 0:
+                continue
+            clause = Clause.parse_clause(clause_raw[:idx])
+            temp.append(clause)
+            self.add(clause)
 
 KB = Knowledge_Base()
-
-inp = 'husband(Person, Wife)   :- \+ (married(Person, Wife)) , (male(Person) ; female(Wife))'
-inp2 = 'husband(X, Y) :- \+male(X), married(X, Y)'
-
-clause = Clause.parse(inp)
-KB.add(clause)
+KB.read_from_file('Tree_family.pl')
+KB.print()
 
 
-check = Symbol('husband', Symbol_Type.COMPOUND, [Symbol('a', Symbol_Type.CONSTANT, None), Symbol('b', Symbol_Type.CONSTANT, None)])
-sub, clause = KB.get_unifiable(check)
-print_substitutes(sub)
-print(str(clause))
