@@ -9,7 +9,7 @@ son(Child, Parent) :- child(Child, Parent) , male(Child).
 daughter(Child, Parent) :- child(Child, Parent) , female(Child).
 
 
-grandparent(GP, GC) :- parent(GP,X) , father(X, GC). 
+grandparent(GP, GC) :- parent(GP,X) , parent(X, GC). 
 grandmother(GM, GC) :- mother(GM,X) , father(X, GC).
 grandfather(GF, GC) :- father(GF,X) , father(X, GC).
 grandchild(GC,GP) :- grandparent(GP, GC). 
