@@ -1,51 +1,162 @@
-husband(Person, Wife) :- married(Person, Wife) , male(Person).
-wife(Person, Husband) :- married(Person, Husband) , female(Person).
+husband(Person, Wife) :- married(Person, Wife) , male(Person), female(Wife).
+wife(Person, Husband) :- married(Person, Husband) , female(Person), male(Husband).
 
 father(Parent, Child) :- parent(Parent, Child) , male(Parent).  
 mother(Parent, Child) :- parent(Parent, Child) , female(Parent).  
 
 child(Child, Parent) :- parent(Parent, Child). 
-son(Child, Parent) :- child(Child, Parent) , male(Child).
-daughter(Child, Parent) :- child(Child, Parent) , female(Child).
+son(Child, Parent) :- 
+  parent(Parent, Child) , 
+  male(Child).
+
+daughter(Child, Parent) :- 
+  parent(Parent, Child) , 
+  female(Child).
 
 
-grandparent(GP, GC) :- parent(GP,X) , parent(X, GC). 
-grandmother(GM, GC) :- mother(GM,X) , father(X, GC).
-grandfather(GF, GC) :- father(GF,X) , father(X, GC).
-grandchild(GC,GP) :- grandparent(GP, GC). 
-grandson(GS,GP) :- grandparent(GP, GS) , male(GS). 
-granddaughter(GD, GP) :- grandparent(GP, GD) , female(GD). 
+grandparent(GP, GC) :- 
+  parent(GP,X) , 
+  parent(X, GC). 
+
+grandmother(GM, GC) :- 
+  female(GM) , 
+  parent(GM,X) , 
+  parent(X, GC). 
+
+grandfather(GF, GC) :- 
+  male(GF) , 
+  parent(GF, X), 
+  parent(X, GC).
+
+grandchild(GC,GP) :- 
+  parent(GP,X) , 
+  parent(X, GC). 
+
+grandson(GS,GP) :- 
+  parent(GP,X) , 
+  parent(X, GS), 
+  male(GS). 
+
+granddaughter(GD, GP) :- 
+  parent(GP,X) , 
+  parent(X, GD), 
+  male(GD).
 
 sibling(Person1, Person2) :- 
- parent(Z, Person1) , 
- parent(Z, Person2) , 
- Person1 \= Person2. 
+  parent(Z, Person1) , 
+  parent(Z, Person2) ,
+  male(Z), 
+  parent(Y, Person1) , 
+  parent(Y, Person2) ,
+  female(Y), 
+  Person1 \= Person2. 
 
-brother(Person,Sibling) :- sibling(Person, Sibling), male(Person).
-sister(Person,Sibling) :- sibling(Person, Sibling), female(Person).
+brother(Person,Sibling) :- 
+  male(Person), 
+  parent(Z, Person) , 
+  parent(Z, Sibling) , 
+  male(Z) ,
+  parent(Y, Person) , 
+  parent(Y, Sibling) , 
+  female(Y), 
+  Person \= Sibling. 
+
+sister(Person,Sibling) :- 
+  female(Person), 
+  parent(Z, Person) , 
+  parent(Z, Sibling) , 
+  male(Z) ,
+  parent(Y, Person) , 
+  parent(Y, Sibling) , 
+  female(Y), 
+  Person \= Sibling. 
 
 aunt(Person, NieceNephew) :-
-  female(Person),
-  sibling(Person, X),
-  parent(X, NieceNephew).
+  (female(Person),
+  parent(X, NieceNephew) ,
+  parent(Z, Person) , 
+  parent(Z, X) ,
+  male(Z) ,
+  parent(Y, Person) , 
+  parent(Y, X) ,
+  female(Y),
+  X \= Person );
+
+  (male(U), 
+  parent(X , NieceNephew), 
+  parent(Z1, U) , 
+  parent(Z1, X) , 
+  male(Z1) ,
+  parent(Y1, U) , 
+  parent(Y1, X) , 
+  female(Y1), 
+  U \= X, 
+  married(U, Person)). 
 
 uncle(Person, NieceNephew) :-
-  male(Person),
-  sibling(Person, X),
-  parent(X, NieceNephew).
+  (male(Person),
+  parent(X, NieceNephew) ,
+  parent(Z, Person) , 
+  parent(Z, X) ,
+  male(Z) ,
+  parent(Y, Person) , 
+  parent(Y, X) ,
+  female(Y) , 
+  X \= Person ); 
+
+  (female(A), 
+  parent(K , NieceNephew), 
+  parent(Z1, A) , 
+  parent(Z1, K) , 
+  male(Z1) ,
+  parent(Y1, A) , 
+  parent(Y1, K) , 
+  female(Y1), 
+  A \= K, 
+  married(A, Person)). 
 
 
 niece(Person, AuntUncle) :-
-  female(Person),
-  parent(Parent, Person),
-  sibling(Parent, AuntUncle),
-  male(AuntUncle).
+  (female(Person),
+  parent(Z, AuntUncle) , 
+  parent(Z, X) ,
+  male(Z), 
+  parent(Y, AuntUncle) , 
+  parent(Y, X) ,
+  female(Y), 
+  AuntUncle \= X , 
+  parent(X, Person)); 
+
+  (parent(X, Person), 
+  parent(Z, T) , 
+  parent(Z, X) ,
+  male(Z), 
+  parent(Y, T) , 
+  parent(Y, X) ,
+  female(Y), 
+  T \= X , 
+  married(T, AuntUncle)).
 
 nephew(Person, AuntUncle) :-
-  male(Person),
-  parent(Parent, Person),
-  sibling(Parent, AuntUncle),
-  male(AuntUncle).
+  (male(Person),
+  parent(Z, AuntUncle) , 
+  parent(Z, X) ,
+  male(Z), 
+  parent(Y, AuntUncle) , 
+  parent(Y, X) ,
+  female(Y), 
+  AuntUncle \= X , 
+  parent(X, Person)); 
+
+  (parent(X, Person), 
+  parent(Z, T) , 
+  parent(Z, X) ,
+  male(Z), 
+  parent(Y, T) , 
+  parent(Y, X) ,
+  female(Y), 
+  T \= X , 
+  married(T, AuntUncle)).
 
 
 divorced('Queen Elizabeth II', 'Prince Phillip'). 
@@ -92,8 +203,8 @@ parent('Prince Edward', 'Lady Louise Mountbatten-Windsor').
 
 parent('Prince William', 'Prince George').
 parent('Prince William', 'Princess Charlotte').
-parent('Kate Middleton', 'Prince George').
-parent('Kate Middleton', 'Princess Charlotte').
+%parent('Kate Middleton', 'Prince George').
+%parent('Kate Middleton', 'Princess Charlotte').
 
 parent('Autumn Kelly', 'Savannah Phillips').
 parent('Autumn Kelly', 'Isla Phillips').
@@ -137,6 +248,5 @@ female('Princess Charlotte').
 female('Savannah Phillips').
 female('Isla Phillips'). 
 female('Mia Grace Tindall').
-
 
 
