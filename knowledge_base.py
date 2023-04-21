@@ -1,3 +1,4 @@
+from re import sub
 from Clause_FOL_2 import Clause, find_first_of, parse_symbol, split_to_symbol
 from Symbol_FOL import Symbol, Symbol_Type, Unify, print_substitutes
 from queue import Queue
@@ -57,11 +58,12 @@ class Knowledge_Base:
     # then for each, we will evaluate that clause body and return the appropriate value
     def eval_symbol(self, symbol : Symbol, substitutes : list) -> bool:
         print('eval: ', symbol)
-        print('eval sub: ', end='')
+        print('eval sub symbol: ', end='')
         print_substitutes(substitutes)
+        if isinstance(symbol, bool):
+            return symbol
         if symbol.signature not in self.data:
             return False
-
         # return not of its arg
         if symbol.name == 'not':
             return not self.eval_symbol(symbol.args[0])  
@@ -78,15 +80,17 @@ class Knowledge_Base:
             return unify_sub != None
             
         for clause in self.data[symbol.signature]:
-            unify_sub = Unify(symbol, clause.head, substitutes)
+            unify_sub = Unify(symbol, clause.head, substitutes[:])
             if unify_sub == None:
                 continue
             print('eval sym find unify: ', end='')
             print_substitutes(unify_sub)
-            if unify_sub == []:
-                return True
+            substitutes[:] = unify_sub
             if isinstance(clause.body, bool):
                 return clause.body
+            if unify_sub == []:
+                raise Exception("Shouldnot happen")
+                return True
             return self.eval_posfix(clause.body, substitutes)
 
     def eval_posfix(self, posfix : list, substitutes) -> bool:
@@ -104,19 +108,8 @@ class Knowledge_Base:
                 operand2 = q.get()
                 operand1 = q.get()
                 # check if not evalute then evaluate it
-                # value1 = self.eval_symbol(operand1, substitutes) if isinstance(operand1, Symbol) else operand1
-                # value2 = self.eval_symbol(operand2, substitutes) if isinstance(operand2, Symbol) else operand2
-                if isinstance(operand1, Symbol):
-                    value1 = self.eval_symbol(operand1, substitutes)
-                    print('eval value1: ', value1)
-                else:
-                    value1 = True
-                if isinstance(operand2, Symbol):
-                    print(operand2)
-                    value2 = self.eval_symbol(operand2, substitutes)
-                    print('eval value2: ', value2)
-                else:
-                    value2 = True
+                value1 = self.eval_symbol(operand1, substitutes)
+                value2 = self.eval_symbol(operand2, substitutes)
                 if operator == ',':
                     result = value1 & value2
                 elif operator == ';':
@@ -126,23 +119,17 @@ class Knowledge_Base:
                 q.put(token)
         result = q.get()
         if isinstance(result, Symbol):
+            print("Last")
             return self.eval_symbol(result, substitutes)
         return result
 
     def infer(self, query : Symbol) -> 'tuple(bool, list)':
         if query.signature not in self.data:
-            return (False, None) 
-        for clause in self.data[query.signature]:
-            unify_solution = Unify(query, clause.head, [])
-            if unify_solution == None:
-                continue
-            if unify_solution == []:
-                return (True, unify_solution)
-            if isinstance(clause.body, bool): 
-                return (clause.body, unify_solution)
-            else:
-                return (self.eval_posfix(clause.body, unify_solution), unify_solution)
-        return None 
+            return (False, None)
+        sub = []
+        result = self.eval_symbol(query, sub)
+
+        return (result, sub) 
 
 
 

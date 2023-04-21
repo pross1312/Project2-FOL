@@ -64,6 +64,8 @@ class Symbol:
 # return exist stubstitute of variable x in sub
 # if not exist return None
 def ExistSubstitute(x : Symbol, substitutes):
+    if x.type != Symbol_Type.VARIABLE:
+        return None
     for sub in substitutes:
         if sub[0].name == x.name and sub[0].clause_index == x.clause_index:
             return sub[1]
