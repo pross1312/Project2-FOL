@@ -1,6 +1,5 @@
-from ast import Constant
 from enum import Enum
-
+from symtable import SymbolTable
 
 class Symbol_Type(Enum):
     COMPOUND = 0 # function and predicate is compound symbol
@@ -26,6 +25,12 @@ class Symbol:
             self.arity = len(args)
         else:
             self.arity = 0
+
+        # this is use for standardize different clause
+        # add in clause index that this symbol is in to make every variable in different clause distinct
+        # init to none
+        if type == Symbol_Type.VARIABLE:
+            self.clause_index = None
         self.signature = name + "/" + str(self.arity)
         if (name == None or type == None):
             raise Exception("Invalid arguments: term")
@@ -48,35 +53,26 @@ class Symbol:
                 else:
                     s += ', '
             return s
-            
-def VARIABLE(x):
-    if x.__class__.__name__ == 'Symbol' and x.type == Symbol_Type.VARIABLE:
-        return True
-    return False
 
-def COMPOUND(x):
-    if (x.__class__.__name__ == 'Symbol') and x.type == Symbol_Type.COMPOUND:
+    def __eq__(self, __value: object) -> bool:
+        check_string = self.__str__() == __value.__str__()
+        if check_string == False:
+            return False
+        if self.type == Symbol_Type.VARIABLE:
+            return self.clause_index == __value.clause_index
         return True
-    return False
-    
-def LIST(x):
-    if (x.__class__.__name__ == 'list'):
-        return True
-    return False
-
 # return exist stubstitute of variable x in sub
 # if not exist return None
-def ExistSubstitute(x, substitutes):
+def ExistSubstitute(x : Symbol, substitutes):
     for sub in substitutes:
-        if sub[0].name == x.name:
+        if sub[0].name == x.name and sub[0].clause_index == x.clause_index:
             return sub[1]
     return None
 
 
 def Occur_check(x, y):
-    if not COMPOUND(y):
+    if not isinstance(y, Symbol) or y.type != Symbol_Type.COMPOUND:
         return False
-
     for arg in y.args:
         if (x == arg):
             return True
@@ -98,25 +94,26 @@ def Rest(x):
 # pass empty list to sub at first
 def Unify(x, y, substitutes) -> list:
     if substitutes == None:
-        return None
+        return substitutes
 
     elif x == y:
         return substitutes
 
-    elif VARIABLE(x): 
+    elif isinstance(x, Symbol) and x.type == Symbol_Type.VARIABLE:
         return Unify_Var(x, y, substitutes)
 
-    elif VARIABLE(y):
+    elif isinstance(y, Symbol) and y.type == Symbol_Type.VARIABLE:
         # print('var y: ', y)
         return Unify_Var(y, x, substitutes)
 
-    elif COMPOUND(x) and COMPOUND(y): 
+    elif isinstance(x, Symbol) and x.type == Symbol_Type.COMPOUND and\
+         isinstance(y, Symbol) and y.type == Symbol_Type.COMPOUND:
         # print('compound x: ', x)
         # print('compound y: ', y)
         # only unify if functions or predicate have the same names and number of arguments
         if x.name == y.name and x.arity == y.arity:
             return Unify(x.args, y.args, substitutes)
-    elif LIST(x) and LIST(y):
+    elif isinstance(x, list) and isinstance(y, list): 
         # print('list x: ', end='')
         # for temp in x:
         #     print(temp, end=', ')
@@ -164,6 +161,17 @@ def print_substitutes(substitutes):
 
 # k = Symbol('g', Symbol_Type.COMPOUND, [Y, f])
 # g = Symbol('f', Symbol_Type.COMPOUND, [k])
+
+
+# a = Symbol('a', Symbol_Type.CONSTANT, None)
+# b = Symbol('a', Symbol_Type.CONSTANT, None)
+# c = Symbol('temp', Symbol_Type.COMPOUND, [a])
+# d = Symbol('temp', Symbol_Type.COMPOUND, [b])
+# print(c == d)
+# print(c.__str__())
+# print(d.__str__())
+# solution = Unify(c, d, [])
+# print_substitutes(solution)
 
 # clause1 = f
 # clause2 = g

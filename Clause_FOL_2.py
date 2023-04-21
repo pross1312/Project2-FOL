@@ -3,6 +3,7 @@ import Postfix
 
 # parse prolog clause, only some of its to implement first order logic backward chaining
 # a lots are missing, and there may be bug too
+# syntax, error checking is not realy good so please make sure that input is acceptable in prolog
 
 
 
@@ -16,11 +17,16 @@ def debug(s : str):
 # husband(Person, Wife)   :- married(Person, Wife) , (male(Person) ; female(Wife)).
 # husband(Person, Wife)
 class Clause:
+    nClause = 0
     list_seperator = '()\\,;\'"'
     def __init__(self, head, body) -> None:
         self.head = head
         self.body = body 
 
+    def __lt__(self, __obj : object) -> bool:
+        body_length_a = len(self.body) if self.body != True else 0
+        body_length_b = len(__obj.body) if __obj.body != True else 0
+        return body_length_a < body_length_b
 
     def __str__(self) -> str:
         s = str(self.head)
@@ -51,6 +57,7 @@ class Clause:
             body = True
         if len(head_symbols) != 1:
             raise Exception('Invalid clause ' + tokens[0])
+        Clause.nClause += 1
         return Clause(head_symbols[0], body)
 
 def find_first_of(s : str, to_find : str, start = 0):
@@ -78,7 +85,15 @@ def parse_symbol(raw_symbol : str, depth, specify_type : Symbol_Type = None) -> 
             type_symbol = Symbol_Type.VARIABLE if specify_type == None else specify_type
         else:
             type_symbol = Symbol_Type.CONSTANT if specify_type == None else specify_type     
+    
         symbol = Symbol(raw_symbol, type_symbol, None)
+        
+        # standardize variable
+        # set the clause number for all variable in a clause
+        # in order to distinguise them with other variable with the same name in different clause
+        # clause index will be increase everytime after Clause.parse_clause is call
+        if type_symbol == Symbol_Type.VARIABLE:
+            symbol.clause_index = Clause.nClause
     # parse a normal compound symbol
     if raw_symbol[-1] == ')':
         open_index = find_first_of(raw_symbol, '(')
