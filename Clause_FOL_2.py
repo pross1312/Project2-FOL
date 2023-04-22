@@ -17,7 +17,7 @@ def debug(s : str):
 # husband(Person, Wife)
 class Clause:
     nClause = 0
-    list_seperator = '()\\,;\'"'
+    list_seperator = '()\\,;\'"='
     def __init__(self, head, body) -> None:
         self.head = head
         self.body = body 
@@ -223,7 +223,7 @@ def split_to_symbol(raw_symbols: str, depth: int):
                     # create negate symbol with arg computed above
                     symbol = Symbol('not', Symbol_Type.COMPOUND, [arg_symbol])
 
-                # different symbol
+                # inunifiable symbol
                 elif raw_symbols[index + 1] == '=':
                     # find first character
                     for first_char in range(index + 2, len(raw_symbols)):
@@ -240,7 +240,23 @@ def split_to_symbol(raw_symbols: str, depth: int):
                     symbol = Symbol('\=', Symbol_Type.COMPOUND, [symbol_arg1, symbol_arg2])
                     debug(symbol)
                     symbol_end_index = end_idx - 1
-
+            # unifiable symbol
+            elif raw_symbols[index] == '=':
+                # find first character
+                for first_char in range(index + 1, len(raw_symbols)):
+                    if str.isalpha(raw_symbols[first_char]):
+                        break
+                end_idx = find_first_of(raw_symbols, ',; \t', first_char)
+                if end_idx == None:
+                    end_idx = len(raw_symbols)
+                
+                symbol_arg1 = parse_symbol(raw_symbols[start : index], depth)
+                symbol_arg2 = parse_symbol(raw_symbols[first_char : end_idx], depth)
+                debug('arg1: ' + str(symbol_arg1))
+                debug('arg2: ' + str(symbol_arg2))
+                symbol = Symbol('=', Symbol_Type.COMPOUND, [symbol_arg1, symbol_arg2])
+                debug(symbol)
+                symbol_end_index = end_idx - 1
 
         if symbol: # no more symbol, stop spliting
             list_symbols.append(symbol)   # add symbol to list
@@ -250,22 +266,13 @@ def split_to_symbol(raw_symbols: str, depth: int):
 
 
 # test_input = 'son(Child, Parent) :- \+child(Child, Parent) , male(Child)'
-# print(test_input)
-# clause = Clause.parse_clause(test_input)
-# print('output: ', clause)
-
 # test_input = 'husband(Person, Wife)  :- married(Person, Wife) , (male(Person) ; female(Wife))'
-# print(test_input)
-# clause = Clause.parse_clause(test_input)
-# print('output: ', clause)
-
 # test_input = 'husband(Person, Wife)  :- married(Person, Wife) , (male(Person) ; (female(Wife) , twiq(Person)) ; asg(Tuong))'
-# print(test_input)
-# clause = Clause.parse_clause(test_input)
-# print('output: ', clause)
-
 # test_input = 'sibling(Person1, Person2) :- parent(Z, Person1) , parent(Z, Person2) , Person1 \= Person2'
-# print(test_input)
-# clause = Clause.parse_clause(test_input)
-# print('output: ', clause)
+test_input = 'move(A, B) :- A = B, blank(A); empty(B)'
+
+
+print(test_input)
+clause = Clause.parse_clause(test_input)
+print('output: ', clause)
 
