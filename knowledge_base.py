@@ -1,11 +1,14 @@
-from re import sub
 from Clause_FOL_2 import Clause, find_first_of, parse_symbol, split_to_symbol
 from Symbol_FOL import Symbol, Symbol_Type, Unify, print_substitutes
 from queue import Queue
 
-
-
-
+onDebug = False
+def debug(arg):
+    if onDebug:
+        if isinstance(arg, list):
+            print_substitutes(arg)
+        else:
+            print(arg)
 class Knowledge_Base:
     def __init__(self) -> None:
         # base object is a map of head signature to that clause
@@ -37,110 +40,119 @@ class Knowledge_Base:
             clause_raw = clause_raw.strip()
             if len(clause_raw) == 0:
                 continue
+            # find stupid comment
             idx = find_first_of(clause_raw, '%')
             if idx == None:
-                idx = len(clause_raw)
-            if idx == 0:
-                continue
-            clause = Clause.parse_clause(clause_raw[:idx])
+                start = 0
+            else:
+                # if there is an '.' at the end of this comment line like
+                # % iajwoe(A, B).
+                # do nothing
+                start = find_first_of(clause_raw, '\n')
+                if start == None:
+                    continue
+                start += 1
+
+            clause = Clause.parse_clause(clause_raw[start : ])
             temp.append(clause)
             self.add(clause)
 
     def sort(self):
         for value in self.data.values():
             value.sort()
-            for  c in value:
-                print(c)
-            print()
+    
 
-    # this function evaluate a single symbol
-    # basically, first it will check in KB for any clause that has head symbol that can unify with this
-    # then for each, we will evaluate that clause body and return the appropriate value
-    def eval_symbol(self, symbol : Symbol, substitutes : list) -> bool:
-        print('eval: ', symbol)
-        print('eval sub symbol: ', end='')
-        print_substitutes(substitutes)
+    def eval_symbol(self, symbol : Symbol, substitutes : list) -> list:
+        debug('')
+        debug('eval: ' + str(symbol))
+        debug('sub: ')
+        debug(substitutes)
         if isinstance(symbol, bool):
-            return symbol
-        if symbol.signature not in self.data:
-            return False
-        # return not of its arg
-        if symbol.name == 'not':
-            return not self.eval_symbol(symbol.args[0])  
+            debug('______out_____bool______')
+            yield None if symbol == False else []
+            return
+        elif symbol.name == ',':
+            debug('_____and_____case_____')
+            operand1 = symbol.args[0]
+            operand2 = symbol.args[1]
+            for value1 in self.eval_symbol(operand1, substitutes):
+                debug('value1: ')
+                debug(value1)
+                for value2 in self.eval_symbol(operand2, value1):
+                    debug('value2: ')
+                    debug(value2)
+                    yield value2
+        elif symbol.name == ';':
+            debug('______or______case_______')
+            operand1 = symbol.args[0]
+            operand2 = symbol.args[1]
+            for value1 in self.eval_symbol(operand1, substitutes):
+                yield value1
+            for value2 in self.eval_symbol(operand2, substitutes):
+                yield value2
+        elif symbol.name == 'not':
+            debug('_______not_____case_______')
+            arg_value = list(self.eval_symbol(symbol.args[0], substitutes))
+            debug(arg_value)
+            yield None if arg_value != [] else substitutes
+            return
 
-        # return true if 2 args cannot unify with each other
-        if symbol.name == '\=':
-            # make a copy of substitutes to not break any things
-            unify_sub = Unify(symbol.args[0], symbol.args[1], substitutes[:])
-            return unify_sub == None
+        elif symbol.name == '\=':
+            debug('______inunifiable____case_______')
+            unify_value = Unify(symbol.args[0], symbol.args[1], substitutes)
+            debug('unifiable value')
+            debug(unify_value)
+            yield None if unify_value != None else substitutes
+            return
 
-        # return true if 2 args can unify with each other
-        if symbol.name == '=':
-            unify_sub = Unify(symbol.args[0], symbol.args[1], substitutes[:])
-            return unify_sub != None
-            
-        for clause in self.data[symbol.signature]:
-            unify_sub = Unify(symbol, clause.head, substitutes[:])
-            if unify_sub == None:
-                continue
-            print('eval sym find unify: ', end='')
-            print_substitutes(unify_sub)
-            substitutes[:] = unify_sub
-            if isinstance(clause.body, bool):
-                return clause.body
-            if unify_sub == []:
-                raise Exception("Shouldnot happen")
-                return True
-            return self.eval_posfix(clause.body, substitutes)
+        elif symbol.name == '=':
+            debug('______unifiable_____case_________')
+            unify_value = Unify(symbol.args[0], symbol.args[1], substitutes)
+            debug(unify_value)
+            yield None if unify_value == None else substitutes
+            return
 
-    def eval_posfix(self, posfix : list, substitutes) -> bool:
-        print('eval pos: ', end='')
-        for i in posfix:
-            print(i, end=', ')
-        print()
-        print('eval pos sub: ', end='')
-        print_substitutes(substitutes)
-        # TODO: evaluation posfix 
-        q = Queue()
-        for token in posfix:
-            if token.__class__.__name__ == 'str' and token in ',;':
-                operator = token
-                operand2 = q.get()
-                operand1 = q.get()
-                # check if not evalute then evaluate it
-                value1 = self.eval_symbol(operand1, substitutes)
-                value2 = self.eval_symbol(operand2, substitutes)
-                if operator == ',':
-                    result = value1 & value2
-                elif operator == ';':
-                    result = value1 | value2
-                q.put(result)
-            else:
-                q.put(token)
-        result = q.get()
-        if isinstance(result, Symbol):
-            print("Last")
-            return self.eval_symbol(result, substitutes)
-        return result
+        elif symbol.signature not in self.data:
+            debug('_______not_____found_____')
+            return
+        else: 
+            debug('_________normal_________case_______')
+            for clause in self.data[symbol.signature]:
+                unify_solution = Unify(symbol, clause.head, substitutes)
+                if unify_solution == None:
+                    continue
+                debug('found unify: ' + str(clause))
+                debug('unify sub: ')
+                debug(unify_solution)
+                if isinstance(clause.body, bool):
+                    yield unify_solution
+                else:
+                    for value in self.eval_symbol(clause.body, unify_solution):
+                        yield value
+
+
 
     def infer(self, query : Symbol) -> 'tuple(bool, list)':
         if query.signature not in self.data:
             return (False, None)
-        sub = []
-        result = self.eval_symbol(query, sub)
-
-        return (result, sub) 
-
+        for sub in self.eval_symbol(query, []):
+            yield sub
 
 
 KB = Knowledge_Base()
 KB.read_from_file('Tree_family.pl')
 KB.sort()
+# KB.print()
 # test_query = parse_symbol("male(X)", 0)
-test_query = parse_symbol("parent(X, 'James,Viscount Severn')", 0)
-test_query = parse_symbol("son('James,Viscount Severn', X)", 0)
-# test_query = parse_symbol("nephew(Person, 'James,Viscount Severn')", 0)
-output = KB.infer(test_query)
-if output:
-    print(output[0])
-    print_substitutes(output[1])
+# test_query = parse_symbol("grandfather(X, 'Zara Phillips')", 0)
+# test_query = parse_symbol("parent(X, 'James,Viscount Severn')", 0)
+# test_query = parse_symbol("father('Prince Phillip', X)", 0)
+# test_query = parse_symbol("male(X)", 0)
+test_query = parse_symbol("nephew('Princess Charlotte', X)", 0)
+# test_query = parse_symbol('move(a, b)', 0)
+
+print(test_query)
+print()
+for output in KB.infer(test_query):
+    print('OUTPUT: ', end='')
+    print_substitutes(output)

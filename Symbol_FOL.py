@@ -1,6 +1,8 @@
 from enum import Enum
 from symtable import SymbolTable
 
+# everything will be converted to symbol, even for 'and' and 'or' operator
+
 class Symbol_Type(Enum):
     COMPOUND = 0 # function and predicate is compound symbol
     CONSTANT = 1
@@ -43,9 +45,15 @@ class Symbol:
         if self.type == Symbol_Type.CONSTANT:
             return "'{0}'".format(self.name) 
         if self.type == Symbol_Type.VARIABLE:
-            return self.name
+            return self.name + '__' + str(self.clause_index) 
         if self.type == Symbol_Type.COMPOUND:
-            s = self.name + '('
+            if self.name == ',':
+                s = '__and__'
+            elif self.name == ';':
+                s = '__or__'
+            else:
+                s = self.name
+            s += '('
             for i in range(len(self.args)):
                 s += str(self.args[i])
                 if i == len(self.args) - 1:
@@ -96,7 +104,7 @@ def Rest(x):
 # pass empty list to sub at first
 def Unify(x, y, substitutes) -> list:
     if substitutes == None:
-        return substitutes
+        return None
 
     elif x == y:
         return substitutes
@@ -139,8 +147,7 @@ def Unify_Var(var, x, substitutes) -> list:
     if Occur_check(var, x):
         return None
     # print('sub {0} with {1}'.format(str(var), str(x)))
-    substitutes.append((var, x))
-    return substitutes
+    return substitutes + [(var, x)]
 
 # print a solution of Unify function
 def print_substitutes(substitutes):

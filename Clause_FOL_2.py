@@ -1,10 +1,9 @@
 from Symbol_FOL import Symbol, Symbol_Type
-import Postfix
-
+from Postfix import Postfix
+from queue import Queue
 # parse prolog clause, only some of its to implement first order logic backward chaining
 # a lots are missing, and there may be bug too
 # syntax, error checking is not realy good so please make sure that input is acceptable in prolog
-
 
 
 onDebug = False
@@ -29,16 +28,7 @@ class Clause:
         return body_length_a < body_length_b
 
     def __str__(self) -> str:
-        s = str(self.head)
-        if self.body != True:
-            s += ' if '
-            for token in self.body:
-                if token == ',':
-                    s += 'and '
-                elif token == ';':
-                    s += 'or '
-                else:
-                    s += str(token) + ' '
+        s = str(self.head) + ' :- ' + str(self.body)
         return s 
 
     def parse_clause(clause: str):
@@ -49,15 +39,33 @@ class Clause:
 
         head_symbols = split_to_symbol(tokens[0], 0)
         if len(tokens) == 2:
+            # convert to posfix notations first to get rid of parentheses
+            # after that convert all operator to symbol
             body_symbols = split_to_symbol(tokens[1], 0)
-            posfix_parser = Postfix.Postfix(len(body_symbols))
-            posfix_parser.infixToPostfix(body_symbols)
-            body = posfix_parser.postfix
+            posfix_convert = Postfix(len(body_symbols))
+            posfix_convert.infixToPostfix(body_symbols)
+            q = Queue()
+            for token in posfix_convert.postfix:
+                if isinstance(token, str):
+                    operand1 = q.get()
+                    operand2 = q.get()
+                    operator_symbol = Symbol(token, Symbol_Type.COMPOUND, [operand1, operand2])
+                    q.put(operator_symbol)
+                else:
+                    q.put(token)
+            # if no operator in body_symbols
+        
+            if q.empty():
+                body = body_symbols[0]
+            else:
+                body = q.get()
         else:
             body = True
         if len(head_symbols) != 1:
             raise Exception('Invalid clause ' + tokens[0])
         Clause.nClause += 1
+        debug('head: ' + str(head_symbols[0]))
+        debug('body: ' + str(body))
         return Clause(head_symbols[0], body)
 
 def find_first_of(s : str, to_find : str, start = 0):
@@ -125,6 +133,8 @@ def find_match_parantheses(s : str, open_index):
 # add depth to split operator as well
 # split always call parse with the same depth
 # parse call split with depth + 1
+# symbol_end_index will always point to last character of a symbol (possible len(clause))
+# start points to the start character of a symbol (possible white space)
 def split_to_symbol(raw_symbols: str, depth: int):
     # print('raw list symbols in: ', raw_symbols)
     raw_symbols = raw_symbols.strip()
@@ -182,19 +192,35 @@ def split_to_symbol(raw_symbols: str, depth: int):
                 if raw_symbols[index + 1] == '+':
                     # find first character
                     for first_char in range(index + 2, len(raw_symbols)):
-                        if str.isalpha(raw_symbols[first_char]):
+                        if str.isalpha(raw_symbols[first_char]) or raw_symbols[first_char] == '(':
                             break
                     debug('out: ' + raw_symbols[first_char :])
-                    # find end of this special symbol
-                    end_idx = find_first_of(raw_symbols, ' (\t', first_char)
-                    # last symbols
-                    if end_idx == None:
-                        arg_symbol = parse_symbol(raw_symbols[first_char : len(raw_symbols)], depth)
-                        symbol_end_index = len(raw_symbols)
-                    elif raw_symbols[end_idx] == '(':
-                        close_parentheses_index = find_match_parantheses(raw_symbols, end_idx) 
-                        arg_symbol = parse_symbol(raw_symbols[first_char : close_parentheses_index + 1], depth)
-                        symbol_end_index = close_parentheses_index
+
+                    # this is for cases like \+(move(A)) or \+ (move(a, b))
+                    if raw_symbols[first_char] == '(':
+                        end_parentheses = find_match_parantheses(raw_symbols, first_char)
+                        if end_parentheses == None:
+                            raise Exception("Can't find mathcing parentheses")
+                        # split in the parentheses
+                        # different from above, since not is also a symbol, we increase depth here
+                        arg_symbol = split_to_symbol(raw_symbols[index+1 : end_parentheses], depth+1)[0]
+                        symbol_end_index = end_aprentheses
+                    else:     
+                        # find end of this special symbol
+                        # this open parentheses is for compound negate
+                        # like \+ move(a, b)
+                        end_idx = find_first_of(raw_symbols, ' (\t', first_char)
+                        # last symbols
+                        if end_idx == None:
+                            arg_symbol = parse_symbol(raw_symbols[first_char : len(raw_symbols)], depth)
+                            symbol_end_index = len(raw_symbols)
+                        elif raw_symbols[end_idx] == '(':
+                            close_parentheses_index = find_match_parantheses(raw_symbols, end_idx) 
+                            arg_symbol = parse_symbol(raw_symbols[first_char : close_parentheses_index + 1], depth)
+                            symbol_end_index = close_parentheses_index
+                        else:
+                            raise Exception("Not handled this case")
+                    # create negate symbol with arg computed above
                     symbol = Symbol('not', Symbol_Type.COMPOUND, [arg_symbol])
 
                 # different symbol
@@ -212,16 +238,14 @@ def split_to_symbol(raw_symbols: str, depth: int):
                     debug('arg1: ' + str(symbol_arg1))
                     debug('arg2: ' + str(symbol_arg2))
                     symbol = Symbol('\=', Symbol_Type.COMPOUND, [symbol_arg1, symbol_arg2])
-                    symbol_end_index = end_idx + 1
+                    debug(symbol)
+                    symbol_end_index = end_idx - 1
 
 
         if symbol: # no more symbol, stop spliting
             list_symbols.append(symbol)   # add symbol to list
         start = symbol_end_index + 1    # calculate next start index, one past last of symbol
     return list_symbols
-
-
-
 
 
 
@@ -244,3 +268,4 @@ def split_to_symbol(raw_symbols: str, depth: int):
 # print(test_input)
 # clause = Clause.parse_clause(test_input)
 # print('output: ', clause)
+
