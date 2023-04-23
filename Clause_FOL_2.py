@@ -1,6 +1,5 @@
 from Symbol_FOL import Symbol, Symbol_Type
 from Postfix import Postfix
-from queue import Queue
 # parse prolog clause, only some of its to implement first order logic backward chaining
 # a lots are missing, and there may be bug too
 # syntax, error checking is not realy good so please make sure that input is acceptable in prolog
@@ -36,7 +35,7 @@ class Clause:
         tokens = clause.split(':-')
         if len(tokens) > 2 or len(tokens) < 1:
             raise Exception("Invalid clause length parts" + clause)
-
+    
         head_symbols = split_to_symbol(tokens[0], 0)
         if len(tokens) == 2:
             # convert to posfix notations first to get rid of parentheses
@@ -44,21 +43,23 @@ class Clause:
             body_symbols = split_to_symbol(tokens[1], 0)
             posfix_convert = Postfix(len(body_symbols))
             posfix_convert.infixToPostfix(body_symbols)
-            q = Queue()
+            stack = []
             for token in posfix_convert.postfix:
                 if isinstance(token, str):
-                    operand1 = q.get()
-                    operand2 = q.get()
+                    operand2 = stack.pop(-1)
+                    operand1 = stack.pop(-1)
                     operator_symbol = Symbol(token, Symbol_Type.COMPOUND, [operand1, operand2])
-                    q.put(operator_symbol)
+                    # print(operator_symbol)
+                    # print()
+                    stack.append(operator_symbol)
                 else:
-                    q.put(token)
+                    stack.append(token)
             # if no operator in body_symbols
         
-            if q.empty():
+            if len(stack) == 0:
                 body = body_symbols[0]
             else:
-                body = q.get()
+                body = stack[-1]
         else:
             body = True
         if len(head_symbols) != 1:
@@ -168,15 +169,23 @@ def split_to_symbol(raw_symbols: str, depth: int):
                 # check if this is just a () but not symbol, add it in
                 end_parentheses = find_match_parantheses(raw_symbols, index)
                 if end_parentheses == None:
+                    print(raw_symbols)
                     raise Exception("Can't find matching parentheses")
                 # if there is no character or anything between start and this open parentheses then it's not symbol
-                if depth == 0 and str.isspace(raw_symbols[start : index]):
+                # bug here because this doesn't create any symbol so we need to break this loop
+                # and continue next one
+                if depth == 0 and (index == start or str.isspace(raw_symbols[start : index])):
                     debug('On parentheses: ' + raw_symbols[start: ])
                     list_symbols.append(raw_symbols[index])
                     # split in this parentheses, with the same depth means that operator will be add if on depth 0
                     list_tokens = split_to_symbol(raw_symbols[index+1 : end_parentheses], depth) 
                     list_symbols.extend(list_tokens)
                     list_symbols.append(')')
+                    start = end_parentheses+1
+                    continue
+                    # the code below will add a symbol in to list tokens
+                    # but this is only group them together, a very special case
+                    # example: (parent(a, b), child(b, ))
                 # found end of this compound symbol, pass it to parse_symbol
                 else:
                     symbol = parse_symbol(raw_symbols[start : end_parentheses + 1], depth)
@@ -200,11 +209,12 @@ def split_to_symbol(raw_symbols: str, depth: int):
                     if raw_symbols[first_char] == '(':
                         end_parentheses = find_match_parantheses(raw_symbols, first_char)
                         if end_parentheses == None:
+                            print(raw_symbols)
                             raise Exception("Can't find mathcing parentheses")
                         # split in the parentheses
                         # different from above, since not is also a symbol, we increase depth here
                         arg_symbol = split_to_symbol(raw_symbols[index+1 : end_parentheses], depth+1)[0]
-                        symbol_end_index = end_aprentheses
+                        symbol_end_index = end_parentheses
                     else:     
                         # find end of this special symbol
                         # this open parentheses is for compound negate
@@ -264,15 +274,15 @@ def split_to_symbol(raw_symbols: str, depth: int):
     return list_symbols
 
 
-
+# test_input = 'nephew(Person, AuntUncle) :- (male(Person), parent(Z, AuntUncle) ,  parent(Z, X) , male(Z),  parent(Y, AuntUncle) ,  parent(Y, X) , female(Y),  AuntUncle \= X ,  parent(X, Person));   (parent(X, Person),  parent(Z, T) ,  parent(Z, X) , male(Z),  parent(Y, T) ,  parent(Y, X) , female(Y),  T \= X ,  married(T, AuntUncle))'
 # test_input = 'son(Child, Parent) :- \+child(Child, Parent) , male(Child)'
 # test_input = 'husband(Person, Wife)  :- married(Person, Wife) , (male(Person) ; female(Wife))'
 # test_input = 'husband(Person, Wife)  :- married(Person, Wife) , (male(Person) ; (female(Wife) , twiq(Person)) ; asg(Tuong))'
 # test_input = 'sibling(Person1, Person2) :- parent(Z, Person1) , parent(Z, Person2) , Person1 \= Person2'
-test_input = 'move(A, B) :- A = B, blank(A); empty(B)'
+# test_input = 'move(A, B) :- A = B, blank(A); empty(B)'
 
 
-print(test_input)
-clause = Clause.parse_clause(test_input)
-print('output: ', clause)
-
+# print(test_input)
+# clause = Clause.parse_clause(test_input)
+# print('output: ', clause)
+# clause = Clause.parse_clause(test_input)

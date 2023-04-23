@@ -1,6 +1,5 @@
 from Clause_FOL_2 import Clause, find_first_of, parse_symbol, split_to_symbol
 from Symbol_FOL import Symbol, Symbol_Type, Unify, print_substitutes
-from queue import Queue
 
 onDebug = False
 def debug(arg):
@@ -63,7 +62,7 @@ class Knowledge_Base:
     
 
     def eval_symbol(self, symbol : Symbol, substitutes : list) -> list:
-        debug('')
+        debug('\n')
         debug('eval: ' + str(symbol))
         debug('sub: ')
         debug(substitutes)
@@ -75,6 +74,8 @@ class Knowledge_Base:
             debug('_____and_____case_____')
             operand1 = symbol.args[0]
             operand2 = symbol.args[1]
+            debug('and operand1: ' + str(operand1))
+            debug('and operand2: ' + str(operand2))
             for value1 in self.eval_symbol(operand1, substitutes):
                 debug('value1: ')
                 debug(value1)
@@ -86,6 +87,8 @@ class Knowledge_Base:
             debug('______or______case_______')
             operand1 = symbol.args[0]
             operand2 = symbol.args[1]
+            debug('or operand1: ' + str(operand1))
+            debug('or operand2: ' + str(operand2))
             for value1 in self.eval_symbol(operand1, substitutes):
                 yield value1
             for value2 in self.eval_symbol(operand2, substitutes):
@@ -141,16 +144,13 @@ class Knowledge_Base:
 
 KB = Knowledge_Base()
 KB.read_from_file('Tree_family.pl')
-KB.sort()
-# KB.print()
+KB.print()
 # test_query = parse_symbol("male(X)", 0)
 # test_query = parse_symbol("grandfather(X, 'Zara Phillips')", 0)
 # test_query = parse_symbol("parent(X, 'James,Viscount Severn')", 0)
 # test_query = parse_symbol("father('Prince Phillip', X)", 0)
 # test_query = parse_symbol("male(X)", 0)
-test_query = parse_symbol("nephew('Princess Charlotte', X)", 0)
-# test_query = parse_symbol('move(a, b)', 0)
-
+test_query = parse_symbol("nephew('Zara Phillips', X)", 0)
 print(test_query)
 print()
 for output in KB.infer(test_query):
