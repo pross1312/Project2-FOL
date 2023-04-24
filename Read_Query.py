@@ -5,12 +5,12 @@ from knowledge_base import parse_symbol, print_substitutes, convert_Output, Know
 
 def read_Query(option: int):
     if option == 0:
-        print("Input your query")
+        print("Input your query: ", end=" ")
         text = input()
         
     
     elif option == 1:
-        print("Input your file name")
+        print("Input your file name: ", end=" ")
         filename = input()
         with open(filename, 'r') as f:
             text = [line.strip() for line in f.readlines()]
@@ -53,16 +53,16 @@ def find(option: int, queries):
             if not flag:
                 print("No solution")
 
-print("Input your KB file")
+print("Input your KB file: ", end=" ")
 file_KB=input()
 KB = Knowledge_Base()
 KB.read_from_file(file_KB)
                 
 while (True):
-    print("Do you want to read input from file or console (0: console, 1: file)")
+    print("Do you want to read input from file or console (0: console, 1: file): ", end=" ")
     op = input()
     while (int(op) != 1 and int(op) != 0):
-        print("Invalid input, please type again (0: console, 1: file)")
+        print("Invalid input, please type again (0: console, 1: file): ", end="" )
         op = input()
 
     queries = read_Query(int(op))
