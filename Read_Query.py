@@ -75,3 +75,6 @@ while (True):
         continue
     elif (repeat.upper() == "N"):
         break
+    else:
+        print("Wrong character, Exiting")
+        exit(0)
