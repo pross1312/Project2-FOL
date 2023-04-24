@@ -160,7 +160,27 @@ def print_substitutes(substitutes):
         substitutes_strings.append(format_string.format(str(substitutes[0]), str(substitutes[1])))
     print('[' + ', '.join(substitutes_strings) + ']')
 
+# New output
+def check_if_Var(sub, list_args):
+    for i in list_args:
+        if sub.type == i.type == Symbol_Type(2) and sub.name == i.name:
+            return True
+    return False
 
+def convert_Output(substitutes, list_args):
+    if len(substitutes)==1:
+        print(substitutes[0][0].name + ' = ' + substitutes[0][1].name)
+    else:
+        for i in substitutes:
+            if  check_if_Var(i[0], list_args):
+                uni = i[1]
+                while(uni.type != Symbol_Type(1)):
+                    for j in substitutes:
+                        if j[0] == uni:
+                            uni=j[1]
+            
+                print(i[0].name + " = "+  uni.name)
+    
 # X = Symbol('X', Symbol_Type.VARIABLE, None)
 # Y = Symbol('Y', Symbol_Type.VARIABLE, None)
 
