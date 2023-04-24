@@ -1,8 +1,17 @@
 animal(X) :-  reptile(X) ; fish(X) ; mammal(X) ; bird(X).
+
 bird(X) :- 
- penguin(X) ; 
- chicken(X) ;
- owl(X).
+ haveFeather(X) ,
+ layEggs(X) ,
+ haveWings(X) ,
+ warm_blooded(X) ,
+ haveBeak(X).
+
+penguin(X) :-
+ bird(X) ,
+ cant_fly(X) ,
+ eat_fish(X) ,
+ havewebbed_feet(X).
 
 reptile(X) :-
  dinosaurs(X) ;
@@ -13,19 +22,10 @@ fish(X) :-
  cartilanginous(X) ;
  rayfinned_fish(X).
 
-mammal(X) :- primate(X) ;
+mammal(X) :-
+ primate(X) ;
  carnivora(X) ;
  even_toed_ungulate(X).
-
-penguin(X) :-
- haveFeather(X) ,
- layEggs(X) ,
- haveWings(X) ,
- warm_blooded(X) ,
- cant_fly(X) ,
- eat_fish(X) ,
- haveBeak(X) ,
- havewebbed_feet(X).
 
 chicken(X) :-
  haveFeather(X) ,
@@ -162,6 +162,26 @@ whale(X) :-
  live_underwater(X) ,
  smart(X).
 
+wolf(X) :- dog(X) , live_in_the_wild(X).
+domesticated_dog(X) :- dog(X) , domesticated(X) , friendly(X).
+tiger(X) :- cat(X) , live_in_the_wild(X) , have_stripe(X).
+lion(X) :- cat(X) , live_in_the_wild(X) , male_have_coat(X).
+domesticated_cat(X) :- cat(X) , domesticated(X) , friendly(X).
+
+pet(X) :- domesticated_cat(X) ; domesticated_dog(X).
+
+
+cattle(X) :- chicken(X) ; pig(X).
+extinct(X) :- dinosaurs(X).
+live_in_sea(X) :- shark(X) ; whale(X).
+live_underwater(X) :- fish(X) ; whale(X).
+weaker_animal(X) :- bird(X) , mammal(X).
+stronger_animal(X) :- crocodile(X) , dinosaurs(X).
+eat(X, Y) :- stronger_animal(X) , weaker_animal(Y).
+predator(X) :- crocodile(X) ; shark(X) ; dinosaur(X).
+prey(X) :- bird(X) ; pig(X).
+hunt(X, Y) :- predator(X) , prey(Y).
+
 warm_blooded('sperm whale').
 warm_blooded('human').
 warm_blooded('VN pig').
@@ -281,22 +301,3 @@ havewebbed_feet('penguin').
 have_combs('chicken').
 have_wattle('chicken').
 
-cattle(X) :- chicken(X) ; pig(X).
-extinct(X) :- dinosaurs(X).
-live_in_sea(X) :- shark(X) ; whale(X).
-live_underwater(X) :- fish(X) ; whale(X).
-weaker_animal(X) :- bird(X) , mammal(X).
-stronger_animal(X) :- crocodile(X) , dinosaurs(X).
-eat(X, Y) :- stronger_animal(X) , weaker_animal(Y).
-predator(X) :- crocodile(X) ; shark(X) ; dinosaur(X).
-prey(X) :- bird(X) ; pig(X).
-hunt(X, Y) :- predator(X) , prey(Y).
- 
- 
-
-
-
-
-
- 
- 
