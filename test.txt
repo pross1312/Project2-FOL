@@ -1,4 +1,0 @@
-male(X)
-grandfather(X, 'Zara Phillips')
-parent(X, 'James,Viscount Severn')
-father('Prince Phillip', X)
