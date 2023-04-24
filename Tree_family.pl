@@ -70,7 +70,8 @@ sister(Person,Sibling) :-
   parent(Y, Sibling) , 
   female(Y), 
   Person \= Sibling. 
-
+  
+%the sister of someone's father or mother, or the wife of someone's uncle or aunt
 aunt(Person, NieceNephew) :-
   (female(Person),
   parent(X, NieceNephew) ,
@@ -93,6 +94,7 @@ aunt(Person, NieceNephew) :-
   U \= X, 
   married(U, Person)). 
 
+%the brother of someone's mother or father, or the husband of someone's aunt or uncle
 uncle(Person, NieceNephew) :-
   (male(Person),
   parent(X, NieceNephew) ,
@@ -116,6 +118,7 @@ uncle(Person, NieceNephew) :-
   married(A, Person)). 
 
 
+%a daughter of your brother or sister, or a daughter of your husband's or wife's brother or sister
 niece(Person, AuntUncle) :-
   (female(Person),
   parent(Z, AuntUncle) , 
@@ -137,6 +140,7 @@ niece(Person, AuntUncle) :-
   T \= X , 
   married(T, AuntUncle)).
 
+%a daughter of your brother or sister, or a daughter of your husband's or wife's brother or sister
 nephew(Person, AuntUncle) :-
   (male(Person),
   parent(Z, AuntUncle) , 
