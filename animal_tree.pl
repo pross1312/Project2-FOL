@@ -13,152 +13,124 @@ penguin(X) :-
  eat_fish(X) ,
  havewebbed_feet(X).
 
-reptile(X) :-
- dinosaurs(X) ;
- crocodile(X) ;
- lizard(X).
-
-fish(X) :-
- cartilanginous(X) ;
- rayfinned_fish(X).
-
-mammal(X) :-
- primate(X) ;
- carnivora(X) ;
- even_toed_ungulate(X).
-
 chicken(X) :-
- haveFeather(X) ,
- layEggs(X) ,
- haveWings(X) ,
- warm_blooded(X) ,
+ bird(X) ,
  cant_fly(X) ,
  have_combs(X) ,
- haveBeak(X) ,
  have_wattle(X).
 
 owl(X) :-
- haveFeather(X) ,
- layEggs(X) ,
- haveWings(X) ,
- warm_blooded(X) ,
+ bird(X) ,
  can_fly(X) ,
- haveBeak(X) ,
  nocturnal(X).
 
-cartilanginous(X) :-
- shark(X) ;
- stingray(X).
-
-rayfinned_fish(X) :-
- tuna(X) ;
- salmon(X).
-
-primate(X) :-
- human(X) ;
- monkey(X).
-
-carnivora(X) :-
- cat(X) ;
- dog(X).
-
-even_toed_ungulate(X) :-
- pig(X) ;
- whale(X).
-
-dinosaurs(X) :-
+reptile(X) :-
  cold_blooded(X) ,
  layEggs(X) ,
  have_scales(X).
 
+dinosaurs(X) :-
+ carnivore_dino(X) ;
+ herbivore_dino(X)
+
+carnivore_dino(X) :- 
+ reptile(X) ,
+ carnivore(X).
+
+herbivore_dino(X) :-
+ reptile(X) ,
+ herbivore(X).
+
 crocodile(X) :-
- cold_blooded(X) ,
- layEggs(X) ,
- have_scales(X) ,
+ reptile(X) ,
  can_swim(X).
 
 lizard(X) :-
- cold_blooded(X) ,
- layEggs(X) ,
- have_scales(X) ,
+ reptile(X) ,
  can_camouflauge(X).
 
-shark(X) :-
- live_bearing(X) ,
- can_swim(X) ,
+fish(X) :-
  cold_blooded(X) ,
- have_lost_of_teeth(X).
+ can_swim(X).
 
-stingray(X) :- 
- cold_blooded(X) ,
+cartilanginous(X) :-
+ fish(X) ,
+ dont_have_bone(X).
+
+rayfinned_fish(X) :-
+ fish(X) ,
+ layEggs(X),
+ silver_colored(X) ,
+ have_bone(X).
+
+shark(X) :-
+ cartilanginous(X) ,
+ have_lost_of_teeth(X),
+ live_bearing(X).
+
+stingray(X) :-
+ cartilanginous(X) ,
  layEggs(X) ,
- can_swim(X) ,
  venomous(X) ,
  disk_shaped(X).
 
 tuna(X) :-
- cold_blooded(X) ,
- silver_colored(X) ,
- layEggs(X) ,
- can_swim(X).
+ rayfinned_fish(X).
 
 salmon(X) :-
- cold_blooded(X) ,
- layEggs(X) ,
- silver_colored(X) ,
- change_color(X) ,
- can_swim(X).
+ rayfinned_fish(X) ,
+ change_color(X).
 
-human(X) :- 
+mammal(X) :-
  vertebrate(X) ,
  live_bearing(X) ,
  warm_blooded(X) ,
- produce_milk(X) ,
+ produce_milk(X).
+
+primate(X) :-
+ mammal(X) ,
+ big_brain(X) ,
+ omnivore(X).
+
+human(X) :- 
+ primate(X) ,
  very_smart(X).
 
 monkey(X) :-
- vertebrate(X) ,
- live_bearing(X) ,
- warm_blooded(X) ,
- produce_milk(X) ,
+ primate(X) ,
  have_tail(X) ,
- can_climb(X) ,
  smart(X).
 
-dog(X) :- 
- vertebrate(X) ,
- live_bearing(X) ,
- warm_blooded(X) ,
- produce_milk(X) ,
+carnivora(X) :-
+ mammal(X) ,
  have_tail(X) ,
+ carnivore(X).
+
+dog(X) :- 
+ carnivora(X) ,
  sensitive_nose(X) ,
  smart(X).
 
-cat(X) :-
- vertebrate(X) ,
- live_bearing(X) ,
- warm_blooded(X) ,
- produce_milk(X) ,
- have_tail(X) ,
- smart(X),
- eat_meat(X) ,
- can_climb(X).
+cat(X) :- 
+ carnivora(X) ,
+ sharp_eye(X) ,
+ smart(X).
+ 
+even_toed_ungulate(X) :-
+ pig(X) ,
+ whale(X). 
 
 pig(X) :-
- vertebrate(X) ,
- live_bearing(X) ,
- warm_blooded(X) ,
- produce_milk(X) ,
+ mammal(X)
  have_tail(X) ,
  cant_sweat(X) ,
+ omnivore(X) ,
  smart(X).
 
 whale(X) :- 
- vertebrate(X) ,
- live_bearing(X) ,
- warm_blooded(X) ,
- produce_milk(X) ,
+ mammal(X) ,
  have_tail(X) ,
+ carnivore(X) ,
  live_underwater(X) ,
  smart(X).
 
