@@ -1,4 +1,4 @@
-from knowledge_base import parse_symbol, print_substitutes, KB
+from knowledge_base import parse_symbol, print_substitutes, convert_Output, Knowledge_Base
 
 # 0: read query from console
 # 1: read queries from file
@@ -26,7 +26,10 @@ def find(option: int, queries):
         flag= False
         for j in output:
             print('OUTPUT: ', end='')
-            print_substitutes(j)
+            print()
+            #print_substitutes(j)
+            convert_Output(j, test_query.args)
+            print()
             flag = True
 
         if not flag:
@@ -41,12 +44,20 @@ def find(option: int, queries):
             flag= False
             for j in output:
                 print('OUTPUT: ', end='')
-                print_substitutes(j)
+                print()
+                #print_substitutes(j)
+                convert_Output(j, test_query.args)
+                print()
                 flag = True
 
             if not flag:
                 print("No solution")
 
+print("Input your KB file")
+file_KB=input()
+KB = Knowledge_Base()
+KB.read_from_file(file_KB)
+                
 while (True):
     print("Do you want to read input from file or console (0: console, 1: file)")
     op = input()
