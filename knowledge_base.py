@@ -1,5 +1,5 @@
 from Clause_FOL_2 import Clause, find_first_of, parse_symbol, split_to_symbol
-from Symbol_FOL import Symbol, Symbol_Type, Unify, print_substitutes
+from Symbol_FOL import Symbol, Symbol_Type, Unify, print_substitutes, convert_Output
 
 onDebug = False
 def debug(arg):
@@ -142,17 +142,17 @@ class Knowledge_Base:
             yield sub
 
 
-KB = Knowledge_Base()
-KB.read_from_file('Tree_family.pl')
-KB.print()
+# KB = Knowledge_Base()
+# KB.read_from_file('Tree_family.pl')
+# KB.print()
 # test_query = parse_symbol("male(X)", 0)
 # test_query = parse_symbol("grandfather(X, 'Zara Phillips')", 0)
 # test_query = parse_symbol("parent(X, 'James,Viscount Severn')", 0)
 # test_query = parse_symbol("father('Prince Phillip', X)", 0)
 # test_query = parse_symbol("male(X)", 0)
-test_query = parse_symbol("nephew('Zara Phillips', X)", 0)
-print(test_query)
-print()
-for output in KB.infer(test_query):
-    print('OUTPUT: ', end='')
-    print_substitutes(output)
+# test_query = parse_symbol("nephew('Zara Phillips', X)", 0)
+# print(test_query)
+# print()
+# for output in KB.infer(test_query):
+#     print('OUTPUT: ', end='')
+#     print_substitutes(output)
