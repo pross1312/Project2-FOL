@@ -13,10 +13,7 @@ Who is the wife of Prince Charles?
 Who is the son of Prince Andrew?
  	Query: son(X, 'Prince Andrew').
 Who is the daughter of Princess Anne?
-	Query: daughter(X, 'Princess Anne').
-Who is the mother of Sarah Ferguson's husband?
-	
-
+	Query: daughter(X, 'Princess Anne').	
 Was Captain Mark Phillips the grandparent of Lady Louise Mountbatten-Windsor?
 	Query: grandparent('Captain Mark Phillips', 'Lady Louise Mountbatten-Windsor').
 Who is Princess Charlotte's grandfather?
@@ -32,9 +29,7 @@ Who is the grandson of Prince Andrew?
 Who is sister of Prince George? 
 	Query: sister(X, 'Prince George').
 Was Prince Edward the brother of Princess Anne?
-	Query: brother(Prince Edward, 'Princess Anne').
-Who is the brother of Prince Edward's wife?
-	
+	Query: brother(Prince Edward, 'Princess Anne').	
 Identify the siblings of Prince Harry.
 	Query: siblings(X, 'Prince Harry').
 Who is the aunt of Zara Phillips?
