@@ -1,0 +1,21 @@
+father(X, 'Isla Phillips'). 
+mother(X, 'Prince Andrew’s').
+father('Prince Harry', 'Mia Grace Tindall').
+husband(X, 'Princess Anne').
+wife('Queen Elizabeth II', 'Mia Grace Tindall').
+wife(X, 'Prince Charles').
+son(X, 'Prince Andrew').
+daughter(X, 'Princess Anne').	
+grandparent('Captain Mark Phillips', 'Lady Louise Mountbatten-Windsor').
+grandparent(X, 'Princess Charlotte').
+grandparent(X, 'Prince William').
+grandchildren(X, 'Queen Elizabeth II').
+granddaughter(X, 'Prince Charles').
+grandson(X, 'Prince Andrew').
+sister(X, 'Prince George').
+brother(Prince Edward, 'Princess Anne').	
+siblings(X, 'Prince Harry').
+siblings(X, 'Zara Phillips').
+uncle(X, 'Prince George').
+niece(X, 'Prince William').
+nephew('James,Viscount Servern', 'Camilla Parker Bowles').
