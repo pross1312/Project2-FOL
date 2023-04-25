@@ -1,67 +1,79 @@
 animal(X) :-  reptile(X) ; fish(X) ; mammal(X) ; bird(X).
 
 bird(X) :- 
+ vertebrate(X) ,
  haveFeather(X) ,
  layEggs(X) ,
  haveWings(X) ,
  warm_blooded(X) ,
+ have_tail(X) ,
  haveBeak(X).
 
 penguin(X) :-
  bird(X) ,
- cant_fly(X) ,
- eat_fish(X) ,
+ carnivore(X) ,
  havewebbed_feet(X).
 
 chicken(X) :-
+ vertebrate(X) ,
  bird(X) ,
- cant_fly(X) ,
+ omnivore(X) ,
  have_combs(X) ,
  have_wattle(X).
 
 owl(X) :-
  bird(X) ,
  can_fly(X) ,
+ omnivore(X) ,
  nocturnal(X).
 
 reptile(X) :-
+ vertebrate(X) ,
  cold_blooded(X) ,
  layEggs(X) ,
+ have_tail(X) ,
  have_scales(X).
 
 dinosaurs(X) :-
  carnivore_dino(X) ;
- herbivore_dino(X)
+ herbivore_dino(X).
 
 carnivore_dino(X) :- 
  reptile(X) ,
+ extinct(X) ,
  carnivore(X).
 
 herbivore_dino(X) :-
  reptile(X) ,
+ extinct(X) ,
  herbivore(X).
 
 crocodile(X) :-
  reptile(X) ,
+ carnivore(X) ,
  can_swim(X).
 
 lizard(X) :-
  reptile(X) ,
+ carnivore(X) ,
  can_camouflauge(X).
 
 fish(X) :-
+ vertebrate(X) ,
  cold_blooded(X) ,
+ live_underwater(X) ,
+ have_fin(X) ,
  can_swim(X).
 
 cartilanginous(X) :-
  fish(X) ,
+ carnivore(X) ,
  dont_have_bone(X).
 
 rayfinned_fish(X) :-
  fish(X) ,
  layEggs(X),
- silver_colored(X) ,
- have_bone(X).
+ silver_colored(X).
 
 shark(X) :-
  cartilanginous(X) ,
@@ -75,7 +87,8 @@ stingray(X) :-
  disk_shaped(X).
 
 tuna(X) :-
- rayfinned_fish(X).
+ rayfinned_fish(X), 
+ round_body(X).
 
 salmon(X) :-
  rayfinned_fish(X) ,
@@ -117,159 +130,235 @@ cat(X) :-
  smart(X).
  
 even_toed_ungulate(X) :-
- pig(X) ,
- whale(X). 
+ land_based_species(X) ;
+ cetaceans(X).
+
+land_based_species(X) :-
+ mammal(X) ,
+ have_even_toe(X) ,
+ herbivore(X) ,
+ have_tail(X).
+
+cetaceans(X) :-
+ mammal(X) ,
+ carnivore(X) ,
+ live_underwater(X).
 
 pig(X) :-
- mammal(X)
- have_tail(X) ,
- cant_sweat(X) ,
- omnivore(X) ,
+ land_based_species(X) ,
  smart(X).
 
 whale(X) :- 
- mammal(X) ,
- have_tail(X) ,
- carnivore(X) ,
- live_underwater(X) ,
+ cetaceans(X) ,
  smart(X).
 
 wolf(X) :- dog(X) , live_in_the_wild(X).
 domesticated_dog(X) :- dog(X) , domesticated(X) , friendly(X).
-tiger(X) :- cat(X) , live_in_the_wild(X) , have_stripe(X).
 lion(X) :- cat(X) , live_in_the_wild(X) , male_have_coat(X).
 domesticated_cat(X) :- cat(X) , domesticated(X) , friendly(X).
 
-pet(X) :- domesticated_cat(X) ; domesticated_dog(X).
-
+pet(X) :-  domesticated_dog(X).
 
 cattle(X) :- chicken(X) ; pig(X).
-extinct(X) :- dinosaurs(X).
-live_in_sea(X) :- shark(X) ; whale(X).
-live_underwater(X) :- fish(X) ; whale(X).
-weaker_animal(X) :- bird(X) , mammal(X).
-stronger_animal(X) :- crocodile(X) , dinosaurs(X).
-eat(X, Y) :- stronger_animal(X) , weaker_animal(Y).
-predator(X) :- crocodile(X) ; shark(X) ; dinosaur(X).
-prey(X) :- bird(X) ; pig(X).
-hunt(X, Y) :- predator(X) , prey(Y).
 
-warm_blooded('sperm whale').
-warm_blooded('human').
-warm_blooded('VN pig').
-warm_blooded('dog').
-warm_blooded('cat').
-warm_blooded('moneky').
-warm_blooded('penguin').
-warm_blooded('chicken').
-warm_blooded('owl').
+eat(X, Y) :- 
+ (carnivore_dino(X) , (bird(Y) ; mammal(Y) ; reptile(Y))) ;
+ (shark(X) , (mammal(Y) ; fish(Y))) ;
+ (lion(X)) , (primate(Y) ; land_based_species(X) ) ;
+ (crocodile(X)) , (primate(Y) ; land_based_species(X) ) ;
+ (wolf(X) , (primate(Y) ; land_based_species(X))).
 
-cold_blooded('tuna').
-cold_blooded('salmon').
-cold_blooded('stingray').
-cold_blooded('shark').
-cold_blooded('lizard').
-cold_blooded('crocodile').
-cold_blooded('dinosaur').
+vertebrate('Sperm whale').
+vertebrate('Huy').
+vertebrate('Yorkshire pig').
+vertebrate('Corgi').
+vertebrate('Gray wolf').
+vertebrate('African lion').
+vertebrate('Rhesus macaques').
+vertebrate('Emperor penguin').
+vertebrate('Cochin chicken').
+vertebrate('Barn owl').
+vertebrate('Blue fin tuna').
+vertebrate('Chinook salmon').
+vertebrate('Eagle ray').
+vertebrate('Great White shark').
+vertebrate('Chameleon').
+vertebrate('Nile crocodile').
+vertebrate('T-rex').
+vertebrate('Triceratops').
 
-layEggs('dinosaur').
-layEggs('crocodile').
-layEggs('lizard').
-layEggs('stingray').
-layEggs('tuna').
-layEggs('salmon').
-layEggs('penguin').
-layEggs('chicken').
-layEggs('owl').
+have_tail('Sperm whale').
+have_tail('Huy').
+have_tail('Yorkshire pig').
+have_tail('Corgi').
+have_tail('Gray wolf').
+have_tail('African lion').
+have_tail('Rhesus macaques').
+have_tail('Emperor penguin').
+have_tail('Cochin chicken').
+have_tail('Barn owl').
+have_tail('Blue fin tuna').
+have_tail('Chinook salmon').
+have_tail('Eagle ray').
+have_tail('Great White shark').
+have_tail('Chameleon').
+have_tail('Nile crocodile').
+have_tail('T-rex').
+have_tail('Triceratops').
 
-have_scales('dinosaur').
-have_scales('crocodile').
-have_scales('lizard').
+warm_blooded('Sperm whale').
+warm_blooded('Huy').
+warm_blooded('Yorkshire pig').
+warm_blooded('Corgi').
+warm_blooded('Gray wolf').
+warm_blooded('African lion').
+warm_blooded('Rhesus macaques').
+warm_blooded('Emperor penguin').
+warm_blooded('Cochin chicken').
+warm_blooded('Barn owl').
 
-can_camouflauge('lizard').
-have_lost_of_teeth('shark').
+cold_blooded('Blue fin tuna').
+cold_blooded('Chinook salmon').
+cold_blooded('Eagle ray').
+cold_blooded('Great White shark').
+cold_blooded('Chameleon').
+cold_blooded('Nile crocodile').
+cold_blooded('T-rex').
+cold_blooded('Triceratops').
 
-can_swim('crocodile').
-can_swim('shark').
-can_swim('stingray').
-can_swim('tuna').
-can_swim('salmon').
+herbivore('Triceratops').
+herbivore('Yorkshire pig').
 
-venomous('stingray').
-disk_shaped('stingray').
+omnivore('Huy').
+omnivore('Rhesus macaques').
+omnivore('Barn owl').
+omnivore('Cochin chicken').
 
-silver_colored('tuna').
-silver_colored('salmon').
+carnivore('Emperor penguin').
+carnivore('T-rex').
+carnivore('Nile crocodile').
+carnivore('Chameleon').
+carnivore('Great White Shark').
+carnivore('Eagle ray').
+carnivore('Gray wolf').
+carnivore('African lion').
+carnivore('Corgi').
+carnivore('Sperm whale').
 
-change_color('salmon').
+layEggs('Triceratops').
+layEggs('T-rex').
+layEggs('Nile crocodile').
+layEggs('Chameleon').
+layEggs('Eagle ray').
+layEggs('Blue fin tuna').
+layEggs('Chinook salmon').
+layEggs('Emperor penguin').
+layEggs('Cochin chicken').
+layEggs('Barn owl').
 
-vertebrate('human').
-vertebrate('monkey').
-vertebrate('dog').
-vertebrate('cat').
-vertebrate('pig').
-vertebrate('whale').
+have_fin('Blue fin tuna').
+have_fin('Chinook salmon').
+have_fin('Eagle ray').
+have_fin('Great White shark').
 
-live_bearing('human').
-live_bearing('monkey').
-live_bearing('dog').
-live_bearing('cat').
-live_bearing('pig').
-live_bearing('whale').
+have_scales('Triceratops').
+have_scales('T-rex').
+have_scales('Nile crocodile').
+have_scales('Chameleon').
 
-produce_milk('human').
-produce_milk('monkey').
-produce_milk('dog').
-produce_milk('cat').
-produce_milk('pig').
-produce_milk('whale').
+can_camouflauge('Chameleon').
+have_lost_of_teeth('Great White Shark').
 
-very_smart('human').
+can_swim('Nile crocodile').
+can_swim('Great White Shark').
+can_swim('Eagle ray').
+can_swim('Blue fin tuna').
+can_swim('Chinook salmon').
 
-smart('monkey').
-smart('dog').
-smart('cat').
-smart('pig').
-smart('whale').
+venomous('Eagle ray').
+disk_shaped('Eagle ray').
+
+silver_colored('Blue fin tuna').
+silver_colored('Chinook salmon').
+
+change_color('Chinook salmon').
+
+
+live_bearing('Corgi').
+live_bearing('Rhesus macaques').
+live_bearing('Gray wolf').
+live_bearing('African lion').
+live_bearing('Yorkshire pig').
+live_bearing('Sperm whale').
+live_bearing('Great White Shark').
+
+produce_milk('Corgi').
+produce_milk('Rhesus macaques').
+produce_milk('Gray wolf').
+produce_milk('African lion').
+produce_milk('Yorkshire pig').
+produce_milk('Sperm whale').
+
+very_smart('Huy').
+
+smart('Rhesus macaques').
+smart('Corgi').
+smart('Gray wolf').
+smart('African lion').
+smart('Yorkshire pig').
+smart('Sperm whale').
  
-have_tail('monkey').
-have_tail('dog').
-have_tail('cat').
-have_tail('pig').
-have_tail('whale').
 
-can_climb('monkey').
-can_climb('cat').
+sensitive_nose('Corgi').
+sensitive_nose('Gray wolf').
+sharp_eye('African lion').
 
-sensitive_nose('dog').
-eat_meat('cat').
+cant_sweat('Yorkshire pig').
 
-cant_sweat('pig').
-live_underwater('whale').
+live_underwater('Sperm whale').
+live_underwater('Great White shark').
+live_underwater('Eagle ray').
+live_underwater('Blue fin tuna').
+live_underwater('Chinook salmon').
 
-haveFeather('penguin').
-haveFeather('chicken').
-haveFeather('owl').
+haveFeather('Emperor penguin').
+haveFeather('Cochin chicken').
+haveFeather('Barn owl').
 
 
-haveWings('penguin').
-haveWings('chicken').
-haveWings('owl').
+haveWings('Emperor penguin').
+haveWings('Cochin chicken').
+haveWings('Barn owl').
 
-haveBeak('penguin').
-haveBeak('chicken').
-haveBeak('owl').
+haveBeak('Emperor penguin').
+haveBeak('Cochin chicken').
+haveBeak('Barn owl').
 
-cant_fly('penguin').
-cant_fly('chicken').
+can_fly('Barn owl').
 
-can_fly('owl').
+nocturnal('Barn owl').
 
-nocturnal('owl').
-eat_fish('penguin').
+friendly('Corgi').
 
-havewebbed_feet('penguin').
+live_in_the_wild('Gray wolf').
+live_in_the_wild('African lion').
 
-have_combs('chicken').
-have_wattle('chicken').
+havewebbed_feet('Emperor penguin').
 
+have_combs('Cochin chicken').
+have_wattle('Cochin chicken').
+
+extinct('Triceratops').
+extinct('T-rex').
+
+dont_have_bone('Great White shark').
+dont_have_bone('Eagle ray').
+
+big_brain('Huy').
+big_brain('Rhesus macaques').
+
+have_even_toe('Yorkshire pig').
+
+domesticated('Corgi').
+
+male_have_coat('African lion').
