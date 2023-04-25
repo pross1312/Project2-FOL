@@ -141,6 +141,7 @@ land_based_species(X) :-
 
 cetaceans(X) :-
  mammal(X) ,
+ have_fin(X) ,
  carnivore(X) ,
  live_underwater(X).
 
@@ -161,12 +162,15 @@ pet(X) :-  domesticated_dog(X).
 
 cattle(X) :- chicken(X) ; pig(X).
 
+dangerous_animal(X) :- shark(X) ; lion(X) ; crocodile(X) ; wolf(X).
+prey(X) :- primate(X) ; land_based_species(X).
+
 eat(X, Y) :- 
- (carnivore_dino(X) , (bird(Y) ; mammal(Y) ; reptile(Y))) ;
- (shark(X) , (mammal(Y) ; fish(Y))) ;
- (lion(X)) , (primate(Y) ; land_based_species(X) ) ;
- (crocodile(X)) , (primate(Y) ; land_based_species(X) ) ;
- (wolf(X) , (primate(Y) ; land_based_species(X))).
+ (carnivore_dino(X) , (bird(Y) ; carnivora(Y) ; land_based_species(Y) ; reptile(Y))) ;
+ (shark(X) , (human(Y) ; fish(Y))) ;
+ dangerous_animal(X) , prey(Y).
+
+
 
 vertebrate('Sperm whale').
 vertebrate('Huy').
@@ -187,8 +191,6 @@ vertebrate('Nile crocodile').
 vertebrate('T-rex').
 vertebrate('Triceratops').
 
-have_tail('Sperm whale').
-have_tail('Huy').
 have_tail('Yorkshire pig').
 have_tail('Corgi').
 have_tail('Gray wolf').
@@ -238,7 +240,7 @@ carnivore('Emperor penguin').
 carnivore('T-rex').
 carnivore('Nile crocodile').
 carnivore('Chameleon').
-carnivore('Great White Shark').
+carnivore('Great White shark').
 carnivore('Eagle ray').
 carnivore('Gray wolf').
 carnivore('African lion').
@@ -260,6 +262,7 @@ have_fin('Blue fin tuna').
 have_fin('Chinook salmon').
 have_fin('Eagle ray').
 have_fin('Great White shark').
+have_fin('Sperm whale').
 
 have_scales('Triceratops').
 have_scales('T-rex').
@@ -267,10 +270,10 @@ have_scales('Nile crocodile').
 have_scales('Chameleon').
 
 can_camouflauge('Chameleon').
-have_lost_of_teeth('Great White Shark').
+have_lost_of_teeth('Great White shark').
 
 can_swim('Nile crocodile').
-can_swim('Great White Shark').
+can_swim('Great White shark').
 can_swim('Eagle ray').
 can_swim('Blue fin tuna').
 can_swim('Chinook salmon').
@@ -285,14 +288,16 @@ change_color('Chinook salmon').
 
 
 live_bearing('Corgi').
+live_bearing('Huy').
 live_bearing('Rhesus macaques').
 live_bearing('Gray wolf').
 live_bearing('African lion').
 live_bearing('Yorkshire pig').
 live_bearing('Sperm whale').
-live_bearing('Great White Shark').
+live_bearing('Great White shark').
 
 produce_milk('Corgi').
+produce_milk('Huy').
 produce_milk('Rhesus macaques').
 produce_milk('Gray wolf').
 produce_milk('African lion').
