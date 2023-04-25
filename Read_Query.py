@@ -1,3 +1,4 @@
+import msvcrt
 from knowledge_base import parse_symbol, Knowledge_Base
 from Symbol_FOL import Symbol_Type
 
@@ -50,6 +51,7 @@ def find(option: int, queries):
     if option == 0:
         print("------------------------------------------------------")
         print("Query: ", queries)
+        print("Press Esc to stop, any key else to continue.")
         test_query = parse_symbol(queries, 0)
         output = KB.infer(test_query)
         flag= False
@@ -60,12 +62,13 @@ def find(option: int, queries):
             else:
                 for sub in result:
                     print(sub)
-            print()
             flag = True
-            i = input("Next? (enter to confirm)")
-            if len(i.strip()) != 0:
-                break
-
+            while not msvcrt.kbhit():
+                pass
+            if msvcrt.getch().decode() == chr(27):
+                return
+            print()
+                     
         if not flag:
             print("No solution")
 
@@ -87,9 +90,8 @@ def find(option: int, queries):
                 else:
                     for sub in result:
                         print(sub)
-                print()
                 flag = True
-
+                print()
             if not flag:
                 print("No solution")
 try:
@@ -112,6 +114,6 @@ try:
         find(int(op), queries)
         print()
 
-except KeyboardInterrupt as c:
+except:
     print()
     print("Program exit")
