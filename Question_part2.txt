@@ -1,0 +1,21 @@
+animal(X).
+bird('Barn owl').
+can_fly(X).
+live_bearing(X).
+wolf('Yorkshire pig').
+eat(X, Y).
+cattle('T-rex').
+cat(X).
+live_underwater(X).
+sensitive_nose('Corgi').
+change_color(X).
+human(X).
+herbivore(X).
+mammal(M).
+stingray(X).
+vertebrate(X).
+carnivore(X).
+cetaceans(X).
+have_tail(X).
+eat('T-rex', 'Sperm whale').
+eat('African lion', 'T-rex').

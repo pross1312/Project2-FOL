@@ -1,5 +1,5 @@
 from Clause_FOL import Clause, find_first_of, parse_symbol, split_to_symbol
-from Symbol_FOL import Symbol, Symbol_Type, Unify, print_substitutes, convert_Output
+from Symbol_FOL import Symbol, Symbol_Type, Unify
 class Knowledge_Base:
     def __init__(self) -> None:
         # base object is a map of head signature to that clause
@@ -25,6 +25,7 @@ class Knowledge_Base:
         with open(filename, 'r') as f:
             text = f.read()
         f.close()
+
         clauses_raw = text.split('.')
         temp = []
         for clause_raw in clauses_raw:
@@ -87,13 +88,8 @@ class Knowledge_Base:
                     for value in self.eval_symbol(clause.body, unify_solution):
                         yield value
 
-     
-
     def infer(self, query : Symbol) -> 'tuple(bool, list)':
         if query.signature not in self.data:
             return (False, None)
         for sub in self.eval_symbol(query, []):
             yield sub
-KB = Knowledge_Base()
-KB.read_from_file('Tree_family.pl')
-KB.print()
