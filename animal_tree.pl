@@ -168,9 +168,10 @@ prey(X) :- primate(X) ; land_based_species(X).
 eat(X, Y) :- 
  (carnivore_dino(X) , (bird(Y) ; carnivora(Y) ; prey(Y) ; reptile(Y))) ;
  (shark(X) , (human(Y) ; fish(Y))) ;
- (human(X) , cattle(Y)) ;
+ (human(X) , food(Y)) ;
  (dangerous_animal(X) , prey(Y)).
 
+food(X) :- chicken(X) ; pig(X) ; tuna(X) ; salmon(X).
 
 vertebrate('Sperm whale').
 vertebrate('Huy').
@@ -383,3 +384,5 @@ have_even_toe('Yorkshire pig').
 domesticated('Corgi').
 domesticated('Sokoke').
 male_have_coat('African lion').
+
+round_body('Blue fin tuna').
