@@ -1,150 +1,237 @@
 from Symbol_FOL import Symbol, Symbol_Type
-import Postfix
-
-
-# return a symbol if found and an end index of the symbol (1 past last char of symbol)
-def start_parse_symbol(clause, start_index):
-    # negate symbol handle
-    if clause[start_index] == '\\':
-        if start_index >= len(clause) - 1: # index is at last char, 
-            raise Exception("Invalid clause, maybe missing + for negate symbol.")
-        if clause[start_index + 1] == '+':
-            # find first char or if another not symbol
-            first_char_index = start_index + 2
-            while not str.isalpha(clause[first_char_index]) and clause[first_char_index] != '\\':
-                first_char_index += 1
-            # parse argument of this symbol
-            # since negate symbol is special and can only have 1 argument, we call it only once
-            symbol, end_idx = start_parse_symbol(clause, first_char_index)
-            symbol = Symbol('not', Symbol_Type.COMPOUND, [symbol])
-            # if user use parentheses for negate symbol then increase end_idx to correct index
-            if end_idx < len(clause) and clause[end_idx] == ')':
-                end_idx += 1
-            return symbol, end_idx
-            
-    # handle normal symbol
-    # find end index of name
-    for end in range(start_index+1, len(clause)):
-        if clause[end] == '(' or clause[end] == ',' or clause[end] == ')':
-            break
-    temp_name = clause[start_index : end]
-    name = str.strip(temp_name)
-    if (len(temp_name) != len(name)):
-        raise Exception("Invalid clause, can't have whitespace in name.")
-    # if end index is an open parentheses then it's a function or predicate
-
-    if clause[end] == '(':
-        if str.isupper(name[0]):
-            raise Exception("Invalid clause, can't have compound symbol with upper first char")
-        sym_type = Symbol_Type.COMPOUND
-        args = []
-        # then we continue to parse all arguments
-        start_index = end + 1
-        while clause[start_index] != ')':
-            # start of a symbol is a character
-            if str.isalpha(clause[start_index]):
-                sym, start_index = start_parse_symbol(clause, start_index)
-                # index can't be out of range if its a valid clause
-                if start_index > len(clause):
-                    raise Exception("Invalid clause")
-                args.append(sym)
-                # don't continue to check end index of argument
-                # if end index is ) then stop
-                continue 
-            start_index += 1
-        end_index_of_symbol = start_index + 1
-    else:
-        # first character is upper case or underscore then its variable
-        # else it's constant
-        if str.isupper(name[0]) or name[0] == '_':
-            sym_type = Symbol_Type.VARIABLE
-        else:
-            sym_type = Symbol_Type.CONSTANT
-        args = None
-        end_index_of_symbol = end
-    symbol = Symbol(name, sym_type, args)
-    return symbol, end_index_of_symbol 
-
-def parse_clause(clause : str):
-    prolog_operators = [',', '(', ')', ';' ]
-    # handle negate operator special, treat it as a special symbol
-    index = 0       # current index in clause 
-    # operator (parentheses / if (:-) / and (,) or (;) ...)
-    # list of tokens returned (each element is either symbol or operator)   
-    tokens = []     
-    str.strip(clause) # remove unnecessary white spaces 
-    while index < len(clause):
-        # if index is at space then continue check next char
-        if str.isspace(clause[index]):
-            index += 1
-            continue
-        # index is at a character, probably start of a symbol
-        # or if index is at a backslash then it probably negate symbol
-        # call start_parse_symbol
-        elif str.isalpha(clause[index]) or clause[index] == '\\':
-            symbol, index = start_parse_symbol(clause, index)
-            tokens.append(symbol)
-        else: # probably start of operator like ( | ) | :- | ; | \+ | ...
-            # end_op_index: 1 char past the actual end index
-            end_op_index = len(clause) 
-            for j in range(index + 1, len(clause)):
-                if str.isalnum(clause[j]) or str.isspace(clause[j]):
-                    end_op_index = j
-                    break
-            operator = clause[index : end_op_index]
-            if operator in prolog_operators:
-                tokens.append(operator)
-            else:
-                raise Exception("Invalid operator found {0}".format(operator))
-            index = end_op_index
-    return tokens 
+from Postfix import Postfix
+# parse prolog clause, only some of its to implement first order logic backward chaining
+# a lots are missing, and there may be bug too
+# syntax, error checking is not realy good so please make sure that input is acceptable in prolog
 
 # a clause in prolog has 2 part: head and body
 # husband(Person, Wife)   :- married(Person, Wife) , (male(Person) ; female(Wife)).
 # husband(Person, Wife)
 class Clause:
+    nClause = 0
+    list_seperator = '()\\,;\'"='
     def __init__(self, head, body) -> None:
         self.head = head
         self.body = body 
 
-    # parse and return a Clause object 
-    def parse(clause : str):
-        # split head and body
-        tokens = clause.split(':-')
-        if len(tokens) > 2 or len(tokens) < 1:
-            raise Exception("Invalid clause")
-        head_parsed_clause = parse_clause(tokens[0])
-        if (len(head_parsed_clause) != 1):
-            raise Exception("Invalid clause, head clause can't have more or less than 1 symbol")
-        head = head_parsed_clause[0]
-        if len(tokens) == 1:
-            body = True
-        else:
-            # need to convert to posfix notations for easy calculate
-            body = parse_clause(tokens[1])
-            body_postfix = Postfix.Postfix(len(body))
-            body_postfix.infixToPostfix(body)
-            body = body_postfix.postfix
-        return Clause(head, body)
-
-    def evaluate_body() -> bool:
-        pass
-
     def __str__(self) -> str:
-        s = str(self.head)
-        if self.body != True:
-            s += ' if '
-            for token in self.body:
-                if token == ',':
-                    s += 'and '
-                elif token == ';':
-                    s += 'or '
-                else:
-                    s += str(token) + ' '
+        s = str(self.head) + ' :- ' + str(self.body)
         return s 
 
-# inp = 'husband(Person, Wife)   :- \+\+(married(Person, Wife)) , (male(Person) ; female(Wife))'
-# inp2 = 'husband(X, Y) :- \+\+male(X), married(X, Y)'
+    def parse_clause(clause: str):
+        clause = clause.strip()
+        tokens = clause.split(':-')
+        if len(tokens) > 2 or len(tokens) < 1:
+            raise Exception("Invalid clause length parts" + clause)
+    
+        head_symbols = split_to_symbol(tokens[0], 0)
+        if len(tokens) == 2:
+            # convert to posfix notations first to get rid of parentheses
+            # after that convert all operator to symbol
+            body_symbols = split_to_symbol(tokens[1], 0)
+            posfix_convert = Postfix(len(body_symbols))
+            posfix_convert.infixToPostfix(body_symbols)
+            stack = []
+            for token in posfix_convert.postfix:
+                if isinstance(token, str):
+                    operand2 = stack.pop(-1)
+                    operand1 = stack.pop(-1)
+                    operator_symbol = Symbol(token, Symbol_Type.COMPOUND, [operand1, operand2])
+                    stack.append(operator_symbol)
+                else:
+                    stack.append(token)
+            # if no operator in body_symbols
+        
+            if len(stack) == 0:
+                body = body_symbols[0]
+            else:
+                body = stack[-1]
+        else:
+            body = True
+        if len(head_symbols) != 1:
+            raise Exception('Invalid clause ' + tokens[0])
+        Clause.nClause += 1
+        return Clause(head_symbols[0], body)
 
-# clause = Clause.parse(inp)
-# print(clause)
+def find_first_of(s : str, to_find : str, start = 0):
+    for i in range(start, len(s)):
+        if s[i] in to_find:
+            return i
+    return None
+
+def parse_symbol(raw_symbol : str, depth, specify_type : Symbol_Type = None) -> Symbol:
+    raw_symbol = raw_symbol.strip()
+    if len(raw_symbol) == 0:
+        return None
+    symbol = None # symbol to return
+
+    # parse constant or variable
+    if str.isalnum(raw_symbol[-1]) or raw_symbol[-1] in "'\"":
+        if str.isupper(raw_symbol[0]):
+            type_symbol = Symbol_Type.VARIABLE if specify_type == None else specify_type
+        else:
+            type_symbol = Symbol_Type.CONSTANT if specify_type == None else specify_type     
+    
+        symbol = Symbol(raw_symbol, type_symbol, None)
+        
+        # standardize variable
+        # set the clause number for all variable in a clause
+        # in order to distinguise them with other variable with the same name in different clause
+        # clause index will be increase everytime after Clause.parse_clause is call
+        if type_symbol == Symbol_Type.VARIABLE:
+            symbol.clause_index = Clause.nClause
+    # parse a normal compound symbol
+    if raw_symbol[-1] == ')':
+        open_index = find_first_of(raw_symbol, '(')
+        if open_index == None:
+            raise Exception("Invalid clause")
+        name = raw_symbol[:open_index]
+        type_symbol = Symbol_Type.COMPOUND if specify_type == None else specify_type
+        args = split_to_symbol(raw_symbol[open_index + 1 : -1], depth + 1)
+        symbol = Symbol(name, type_symbol, args)  
+
+    return symbol 
+
+
+def find_match_parantheses(s : str, open_index):
+    count_open = 1    # use to parse normal compound
+    end_parentheses = open_index
+    while count_open != 0:
+        end_parentheses = find_first_of(s, Clause.list_seperator, end_parentheses + 1)
+        if end_parentheses == None:
+            return None
+        # find another open instead of end, increase count
+        if s[end_parentheses] == '(':
+            count_open += 1
+        # found and end
+        if s[end_parentheses] == ')':
+            count_open -= 1
+    return end_parentheses
+
+# add depth to split operator as well
+# split always call parse with the same depth
+# parse call split with depth + 1
+# symbol_end_index will always point to last character of a symbol (possible len(clause))
+# start points to the start character of a symbol (possible white space)
+def split_to_symbol(raw_symbols: str, depth: int):
+    raw_symbols = raw_symbols.strip()
+    list_symbols = []
+    start = 0
+
+    while start < len(raw_symbols): 
+        index = find_first_of(raw_symbols, Clause.list_seperator, start)
+        if index == None or raw_symbols[index] in ',;"\'': # probably a constant or variable
+            # handle case dummy like male('James,Viscount Severn'), notice that ',' is inside '' so it's valid name
+            if index != None and raw_symbols[index] in '\'"':
+                start = index + 1
+                index = find_first_of(raw_symbols, raw_symbols[index], start)
+                symbol = parse_symbol(raw_symbols[start : index], depth, Symbol_Type.CONSTANT)
+                if index == None:
+                    raise Exception("Invalid clause, can't find matching ' or \"")
+                index = find_first_of(raw_symbols, ',;', index + 1)
+            else:
+                symbol = parse_symbol(raw_symbols[start : index], depth)
+            # add operator to list
+            if depth == 0 and index != None: 
+                list_symbols.append(raw_symbols[index])
+            symbol_end_index = index if index != None else len(raw_symbols)
+        # found a seperator, a compound symbol
+        # proceed to find end of this symbol 
+        else:
+            # if open parentheses normal compound
+            # try to find match close
+            if raw_symbols[index] == '(':
+                # check if this is just a () but not symbol, add it in
+                end_parentheses = find_match_parantheses(raw_symbols, index)
+                if end_parentheses == None:
+                    raise Exception("Can't find matching parentheses")
+                # if there is no character or anything between start and this open parentheses then it's not symbol
+                # bug here because this doesn't create any symbol so we need to break this loop
+                # and continue next one
+                if depth == 0 and (index == start or str.isspace(raw_symbols[start : index])):
+                    list_symbols.append(raw_symbols[index])
+                    # split in this parentheses, with the same depth means that operator will be add if on depth 0
+                    list_tokens = split_to_symbol(raw_symbols[index+1 : end_parentheses], depth) 
+                    list_symbols.extend(list_tokens)
+                    list_symbols.append(')')
+                    start = end_parentheses+1
+                    continue
+                    # the code below will add a symbol in to list tokens
+                    # but this is only group them together, a very special case
+                    # example: (parent(a, b), child(b, ))
+                # found end of this compound symbol, pass it to parse_symbol
+                else:
+                    symbol = parse_symbol(raw_symbols[start : end_parentheses + 1], depth)
+                symbol_end_index = end_parentheses
+
+            # special compound symbol
+            elif raw_symbols[index] == '\\':
+                if index + 1 >= len(raw_symbols):
+                    raise Exception("Invalid clause, can't find anything after \\")
+                # negate symbol
+                if raw_symbols[index + 1] == '+':
+                    # find first character
+                    for first_char in range(index + 2, len(raw_symbols)):
+                        if str.isalpha(raw_symbols[first_char]) or raw_symbols[first_char] == '(':
+                            break
+
+                    # this is for cases like \+(move(A)) or \+ (move(a, b))
+                    if raw_symbols[first_char] == '(':
+                        end_parentheses = find_match_parantheses(raw_symbols, first_char)
+                        if end_parentheses == None:
+                            raise Exception("Can't find mathcing parentheses")
+                        # split in the parentheses
+                        # different from above, since not is also a symbol, we increase depth here
+                        arg_symbol = split_to_symbol(raw_symbols[index+1 : end_parentheses], depth+1)[0]
+                        symbol_end_index = end_parentheses
+                    else:     
+                        # find end of this special symbol
+                        # this open parentheses is for compound negate
+                        # like \+ move(a, b)
+                        end_idx = find_first_of(raw_symbols, ' (\t', first_char)
+                        # last symbols
+                        if end_idx == None:
+                            arg_symbol = parse_symbol(raw_symbols[first_char : len(raw_symbols)], depth)
+                            symbol_end_index = len(raw_symbols)
+                        elif raw_symbols[end_idx] == '(':
+                            close_parentheses_index = find_match_parantheses(raw_symbols, end_idx) 
+                            arg_symbol = parse_symbol(raw_symbols[first_char : close_parentheses_index + 1], depth)
+                            symbol_end_index = close_parentheses_index
+                        else:
+                            raise Exception("Not handled this case")
+                    # create negate symbol with arg computed above
+                    symbol = Symbol('not', Symbol_Type.COMPOUND, [arg_symbol])
+
+                # inunifiable symbol
+                elif raw_symbols[index + 1] == '=':
+                    # find first character
+                    for first_char in range(index + 2, len(raw_symbols)):
+                        if str.isalpha(raw_symbols[first_char]):
+                            break
+                    end_idx = find_first_of(raw_symbols, ',; \t', first_char)
+                    if end_idx == None:
+                        end_idx = len(raw_symbols)
+                    
+                    symbol_arg1 = parse_symbol(raw_symbols[start : index], depth)
+                    symbol_arg2 = parse_symbol(raw_symbols[first_char : end_idx], depth)
+                    symbol = Symbol('\=', Symbol_Type.COMPOUND, [symbol_arg1, symbol_arg2])
+                    symbol_end_index = end_idx - 1
+            # unifiable symbol
+            elif raw_symbols[index] == '=':
+                # find first character
+                for first_char in range(index + 1, len(raw_symbols)):
+                    if str.isalpha(raw_symbols[first_char]):
+                        break
+                end_idx = find_first_of(raw_symbols, ',; \t', first_char)
+                if end_idx == None:
+                    end_idx = len(raw_symbols)
+                
+                symbol_arg1 = parse_symbol(raw_symbols[start : index], depth)
+                symbol_arg2 = parse_symbol(raw_symbols[first_char : end_idx], depth)
+                symbol = Symbol('=', Symbol_Type.COMPOUND, [symbol_arg1, symbol_arg2])
+                symbol_end_index = end_idx - 1
+
+        if symbol: # no more symbol, stop spliting
+            list_symbols.append(symbol)   # add symbol to list
+        start = symbol_end_index + 1    # calculate next start index, one past last of symbol
+    return list_symbols

@@ -113,25 +113,15 @@ def Unify(x, y, substitutes) -> list:
         return Unify_Var(x, y, substitutes)
 
     elif isinstance(y, Symbol) and y.type == Symbol_Type.VARIABLE:
-        # print('var y: ', y)
         return Unify_Var(y, x, substitutes)
 
     elif isinstance(x, Symbol) and x.type == Symbol_Type.COMPOUND and\
          isinstance(y, Symbol) and y.type == Symbol_Type.COMPOUND:
-        # print('compound x: ', x)
-        # print('compound y: ', y)
         # only unify if functions or predicate have the same names and number of arguments
         if x.name == y.name and x.arity == y.arity:
             return Unify(x.args, y.args, substitutes)
+
     elif isinstance(x, list) and isinstance(y, list): 
-        # print('list x: ', end='')
-        # for temp in x:
-        #     print(temp, end=', ')
-        # print()
-        # print('list y: ', end='')
-        # for temp in y:
-        #     print(temp, end=', ')
-        # print()
         if len(x) != len(y): # can't unify list with different size
             return None
         return Unify(Rest(x), Rest(y), Unify(x[0], y[0], substitutes))
@@ -146,10 +136,8 @@ def Unify_Var(var, x, substitutes) -> list:
         return Unify(var, value, substitutes)
     if Occur_check(var, x):
         return None
-    # print('sub {0} with {1}'.format(str(var), str(x)))
     return substitutes + [(var, x)]
 
-# print a solution of Unify function
 def print_substitutes(substitutes):
     format_string = '({0} / {1})'
     substitutes_strings = []
@@ -180,32 +168,3 @@ def convert_Output(substitutes, list_args):
                             uni=j[1]
             
                 print(i[0].name + " = "+  uni.name)
-    
-# X = Symbol('X', Symbol_Type.VARIABLE, None)
-# Y = Symbol('Y', Symbol_Type.VARIABLE, None)
-
-# f = Symbol('f', Symbol_Type.COMPOUND, [X])
-
-# m = Symbol('f', Symbol_Type.COMPOUND, [X, Y])
-
-# k = Symbol('g', Symbol_Type.COMPOUND, [Y, f])
-# g = Symbol('f', Symbol_Type.COMPOUND, [k])
-
-
-# a = Symbol('a', Symbol_Type.CONSTANT, None)
-# b = Symbol('a', Symbol_Type.CONSTANT, None)
-# c = Symbol('temp', Symbol_Type.COMPOUND, [a])
-# d = Symbol('temp', Symbol_Type.COMPOUND, [b])
-# print(c == d)
-# print(c.__str__())
-# print(d.__str__())
-# solution = Unify(c, d, [])
-# print_substitutes(solution)
-
-# clause1 = f
-# clause2 = g
-# solution = Unify(clause1, clause2, [])
-# if solution:
-#     print_substitutes(solution)
-# else:
-#     print("can't unify {0} and {1}".format(str(clause1), str(clause2)))
