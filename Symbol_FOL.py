@@ -168,9 +168,13 @@ def check_if_Var(sub, list_args):
     return False
 
 def convert_Output(substitutes, list_args):
-    if len(substitutes)==1:
+    if len(substitutes)==0:
+        print("True")
+    elif len(substitutes)==1:
+        print("True")
         print(substitutes[0][0].name + ' = ' + substitutes[0][1].name)
     else:
+        print("True")
         for i in substitutes:
             if  check_if_Var(i[0], list_args):
                 uni = i[1]
