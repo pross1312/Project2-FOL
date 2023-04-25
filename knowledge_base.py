@@ -60,20 +60,24 @@ class Knowledge_Base:
                 yield value1
             for value2 in self.eval_symbol(operand2, substitutes):
                 yield value2
+
         elif symbol.name == 'not':
             arg_value = list(self.eval_symbol(symbol.args[0], substitutes))
-            yield None if arg_value != [] else substitutes
-            return
+            if arg_value != []:
+                return
+            yield substitutes
 
         elif symbol.name == '\=':
             unify_value = Unify(symbol.args[0], symbol.args[1], substitutes)
-            yield None if unify_value != None else substitutes
-            return
+            if unify_value != None:
+                return
+            yield substitutes
 
         elif symbol.name == '=':
             unify_value = Unify(symbol.args[0], symbol.args[1], substitutes)
-            yield None if unify_value == None else substitutes
-            return
+            if unify_value == None:
+                return
+            yield substitutes
 
         elif symbol.signature not in self.data:
             return
@@ -93,3 +97,11 @@ class Knowledge_Base:
             return (False, None)
         for sub in self.eval_symbol(query, []):
             yield sub
+KB = Knowledge_Base()
+KB.read_from_file('Tree_family.pl')
+test = parse_symbol("aunt(X, 'Prince Harry')", 0)
+print(test)
+for i in KB.infer(test):
+    print('output:')
+    for j in i:
+        print(j[0], ' = ', j[1])
