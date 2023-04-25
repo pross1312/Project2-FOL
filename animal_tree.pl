@@ -153,12 +153,12 @@ whale(X) :-
  cetaceans(X) ,
  smart(X).
 
-wolf(X) :- dog(X) , live_in_the_wild(X).
+wolf(X) :- dog(X) , live_in_the_wild(X) ,sharp_teeth(X), sharp_claw(X).
 domesticated_dog(X) :- dog(X) , domesticated(X) , friendly(X).
-lion(X) :- cat(X) , live_in_the_wild(X) , male_have_coat(X).
+lion(X) :- cat(X) , live_in_the_wild(X) ,sharp_teeth(X), sharp_claw(X), male_have_coat(X).
 domesticated_cat(X) :- cat(X) , domesticated(X) , friendly(X).
 
-pet(X) :-  domesticated_dog(X).
+pet(X) :-  domesticated_dog(X) ; domesticated_cat(X).
 
 cattle(X) :- chicken(X) ; pig(X).
 
@@ -166,16 +166,17 @@ dangerous_animal(X) :- shark(X) ; lion(X) ; crocodile(X) ; wolf(X).
 prey(X) :- primate(X) ; land_based_species(X).
 
 eat(X, Y) :- 
- (carnivore_dino(X) , (bird(Y) ; carnivora(Y) ; land_based_species(Y) ; reptile(Y))) ;
+ (carnivore_dino(X) , (bird(Y) ; carnivora(Y) ; prey(Y) ; reptile(Y))) ;
  (shark(X) , (human(Y) ; fish(Y))) ;
- dangerous_animal(X) , prey(Y).
-
+ (human(X) , cattle(Y)) ;
+ (dangerous_animal(X) , prey(Y)).
 
 
 vertebrate('Sperm whale').
 vertebrate('Huy').
 vertebrate('Yorkshire pig').
 vertebrate('Corgi').
+vertebrate('Sokoke').
 vertebrate('Gray wolf').
 vertebrate('African lion').
 vertebrate('Rhesus macaques').
@@ -192,6 +193,7 @@ vertebrate('T-rex').
 vertebrate('Triceratops').
 
 have_tail('Yorkshire pig').
+have_tail('Sokoke').
 have_tail('Corgi').
 have_tail('Gray wolf').
 have_tail('African lion').
@@ -218,6 +220,7 @@ warm_blooded('Rhesus macaques').
 warm_blooded('Emperor penguin').
 warm_blooded('Cochin chicken').
 warm_blooded('Barn owl').
+warm_blooded('Sokoke').
 
 cold_blooded('Blue fin tuna').
 cold_blooded('Chinook salmon').
@@ -246,6 +249,7 @@ carnivore('Gray wolf').
 carnivore('African lion').
 carnivore('Corgi').
 carnivore('Sperm whale').
+carnivore('Sokoke').
 
 layEggs('Triceratops').
 layEggs('T-rex').
@@ -289,6 +293,7 @@ change_color('Chinook salmon').
 
 live_bearing('Corgi').
 live_bearing('Huy').
+live_bearing('Sokoke').
 live_bearing('Rhesus macaques').
 live_bearing('Gray wolf').
 live_bearing('African lion').
@@ -298,6 +303,7 @@ live_bearing('Great White shark').
 
 produce_milk('Corgi').
 produce_milk('Huy').
+produce_milk('Sokoke').
 produce_milk('Rhesus macaques').
 produce_milk('Gray wolf').
 produce_milk('African lion').
@@ -308,6 +314,7 @@ very_smart('Huy').
 
 smart('Rhesus macaques').
 smart('Corgi').
+smart('Sokoke').
 smart('Gray wolf').
 smart('African lion').
 smart('Yorkshire pig').
@@ -316,7 +323,9 @@ smart('Sperm whale').
 
 sensitive_nose('Corgi').
 sensitive_nose('Gray wolf').
+
 sharp_eye('African lion').
+sharp_eye('Sokoke').
 
 cant_sweat('Yorkshire pig').
 
@@ -344,9 +353,16 @@ can_fly('Barn owl').
 nocturnal('Barn owl').
 
 friendly('Corgi').
+friendly('Sokoke').
 
 live_in_the_wild('Gray wolf').
 live_in_the_wild('African lion').
+
+sharp_claw('Gray wolf').
+sharp_claw('African lion').
+
+sharp_teeth('Gray wolf').
+sharp_teeth('African lion').
 
 havewebbed_feet('Emperor penguin').
 
@@ -365,5 +381,5 @@ big_brain('Rhesus macaques').
 have_even_toe('Yorkshire pig').
 
 domesticated('Corgi').
-
+domesticated('Sokoke').
 male_have_coat('African lion').
