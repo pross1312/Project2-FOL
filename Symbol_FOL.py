@@ -139,9 +139,10 @@ def Unify_Var(var, x, substitutes) -> list:
     return substitutes + [(var, x)]
 
 # New output
-def check_if_Var(sub, list_args):
+def check_if_Var(sub, list_args, marked):
     for i in list_args:
-        if sub.type == i.type == Symbol_Type(2) and sub.name == i.name:
+        if sub.type == i.type == Symbol_Type(2) and sub.name == i.name and i not in marked:
+            marked.append(i)
             return True
     return False
 
@@ -153,8 +154,9 @@ def convert_Output(substitutes, list_args):
         print(substitutes[0][0].name + ' = ' + substitutes[0][1].name)
     else:
         print("True")
+        marked = []
         for i in substitutes:
-            if  check_if_Var(i[0], list_args):
+            if check_if_Var(i[0], list_args, marked):
                 uni = i[1]
                 while(uni.type != Symbol_Type(1)):
                     for j in substitutes:
