@@ -1,4 +1,0 @@
-male(X)
-father(X, Y)
-grandfather(X, 'Zara Phillips')
-uncle(X, 'Prince Harry')
